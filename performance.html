@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>実績入力フォーム</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            background: #f5576c;
+            color: white;
+            padding: 24px;
+            border-radius: 12px 12px 0 0;
+        }
+
+        .header h1 {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .header p {
+            font-size: 14px;
+            margin-top: 4px;
+            opacity: 0.9;
+        }
+
+        .form-content {
+            padding: 24px;
+        }
+
+        .summary-box {
+            background: #f8f9fa;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .summary-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 6px;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #f5576c;
+        }
+
+        .btn-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .btn {
+            padding: 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-back {
+            background: #e0e0e0;
+            color: #666;
+        }
+
+        .btn-submit {
+            background: #f5576c;
+            color: white;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #f5576c;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>実績入力フォーム</h1>
+            <p id="kubunName"></p>
+        </div>
+
+        <div class="form-content">
+            <div class="summary-box">
+                <div class="summary-item">
+                    <span>氏名:</span>
+                    <span id="summaryName"></span>
+                </div>
+                <div class="summary-item">
+                    <span>日付:</span>
+                    <span id="summaryDate"></span>
+                </div>
+                <div class="summary-item">
+                    <span>稼働先:</span>
+                    <span id="summaryWorkplace"></span>
+                </div>
+            </div>
+
+            <div class="section-title">実績項目入力</div>
+
+            <form id="performanceForm"></form>
+
+            <div class="btn-group">
+                <button class="btn btn-back" onclick="goBack()">戻る</button>
+                <button class="btn btn-submit" onclick="submitForm()">送信する</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzeIlgb5tbQXEStT0Q2xdh-ICYFJeMWZbcvlSK6GnNnbKNe1w49Per_ymvrZd9t-IsXrA/exec';
+
+        // 稼働区分の定義
+        const KUBUN_ITEMS = {
+            'キャリア稼働': [
+                {key: 'customer_count', label: '接客数'},
+                {key: 'new_contract', label: '新規'},
+                {key: 'mnp', label: 'MNP'},
+                {key: 'model_change', label: '機種変更'},
+                {key: 'fiber', label: '固定（光）'},
+                {key: 'home_router', label: '固定（ホームルーター）'},
+                {key: 'pocket_wifi', label: 'ポケットWi-Fi'},
+                {key: 'electricity', label: 'でんき'},
+                {key: 'gas', label: 'ガス'},
+                {key: 'credit_silver', label: 'クレカ（シルバー）'},
+                {key: 'credit_gold', label: 'クレカ（ゴールド）'},
+                {key: 'accessory', label: 'アクセサリー（円）'}
+            ],
+            'J:com稼働': [
+                {key: 'customer_count', label: '接客数'},
+                {key: 'sdu_net', label: 'SDU（戸建て）-ネット'},
+                {key: 'sdu_tv', label: 'SDU（戸建て）-テレビ'},
+                {key: 'sdu_phone', label: 'SDU（戸建て）-電話'},
+                {key: 'mdu_net', label: 'MDU（集合住宅）-ネット'},
+                {key: 'mdu_tv', label: 'MDU（集合住宅）-テレビ'},
+                {key: 'mdu_phone', label: 'MDU（集合住宅）-電話'}
+            ],
+            '物販稼働': [
+                {key: 'approach', label: 'アプローチ数'},
+                {key: 'proposal', label: '提案数'},
+                {key: 'sales_own', label: '販売台数（自メーカー）'},
+                {key: 'sales_other', label: '販売台数（他メーカー）'}
+            ],
+            'FISTY稼働': [
+                {key: 'new_free', label: '新規（無料ユーザー）'},
+                {key: 'new_paid', label: '新規（有料ユーザー）'},
+                {key: 'pv', label: 'PV数'},
+                {key: 'negotiation', label: '商談数'},
+                {key: 'content', label: 'コンテンツ制作'}
+            ],
+            'インターン・イベント稼働': [
+                {key: 'approach', label: 'アプローチ数'},
+                {key: 'seating', label: '着座数'},
+                {key: 'contract', label: '成約数（トス含む）'}
+            ]
+        };
+
+        // URL パラメータから稼働区分を取得
+        const urlParams = new URLSearchParams(window.location.search);
+        const kubun = urlParams.get('kubun');
+
+        // 業務報告データを取得
+        const workData = JSON.parse(sessionStorage.getItem('workData') || '{}');
+
+        if (!kubun || !KUBUN_ITEMS[kubun] || !workData.name) {
+            alert('エラー: 業務報告データが見つかりません');
+            window.location.href = 'work.html';
+        }
+
+        // サマリー表示
+        document.getElementById('kubunName').textContent = kubun;
+        document.getElementById('summaryName').textContent = workData.name;
+        document.getElementById('summaryDate').textContent = workData.date;
+        document.getElementById('summaryWorkplace').textContent = workData.workplace;
+
+        // フォーム生成
+        const form = document.getElementById('performanceForm');
+        KUBUN_ITEMS[kubun].forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'form-group';
+            div.innerHTML = `
+                <label>${item.label}</label>
+                <input type="number" id="${item.key}" value="0" min="0">
+            `;
+            form.appendChild(div);
+        });
+
+        function goBack() {
+            if (confirm('入力内容が失われますが、戻りますか？')) {
+                window.location.href = 'work.html';
+            }
+        }
+
+        async function submitForm() {
+            // 実績データを収集
+            const performanceData = {};
+            KUBUN_ITEMS[kubun].forEach(item => {
+                performanceData[item.key] = document.getElementById(item.key).value;
+            });
+
+            // 全データを結合
+            const allData = {
+                type: '業務報告',
+                ...workData,
+                performanceData: performanceData
+            };
+
+            try {
+                await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(allData)
+                });
+
+                alert('送信完了しました');
+                sessionStorage.removeItem('workData');
+                window.location.href = 'index.html';
+            } catch (error) {
+                alert('送信エラー: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>
