@@ -24,6 +24,7 @@
             background: white;
             border-radius: 12px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            overflow-x: hidden;
         }
 
         .header {
@@ -52,7 +53,7 @@
         }
 
         .form-content {
-            padding: 24px;
+            padding: 20px 16px;
         }
 
         .form-group {
@@ -73,10 +74,12 @@
 
         input, select, textarea {
             width: 100%;
+            max-width: 100%;
             padding: 12px;
             border: 2px solid #e0e0e0;
             border-radius: 8px;
             font-size: 16px;
+            box-sizing: border-box;
         }
 
         input:focus, select:focus, textarea:focus {
@@ -93,7 +96,7 @@
         .time-group {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 16px;
+            gap: 12px;
         }
 
         .submit-btn {
@@ -255,22 +258,43 @@
 
         // 従業員リストを動的に読み込み
         async function loadEmployees() {
+            const select = document.getElementById('name');
             try {
-                const response = await fetch(SCRIPT_URL + '?action=getEmployees');
+                const response = await fetch(SCRIPT_URL + '?action=getEmployees', {
+                    method: 'GET',
+                    mode: 'cors'
+                });
+                
+                if (!response.ok) {
+                    throw new Error('HTTP error: ' + response.status);
+                }
+                
                 const data = await response.json();
                 
-                const select = document.getElementById('name');
                 select.innerHTML = '<option value="">選択してください</option>';
                 
-                data.employees.forEach(emp => {
-                    const option = document.createElement('option');
-                    option.value = emp.name;
-                    option.textContent = emp.name;
-                    select.appendChild(option);
-                });
+                if (data.employees && data.employees.length > 0) {
+                    data.employees.forEach(emp => {
+                        const option = document.createElement('option');
+                        option.value = emp.name;
+                        option.textContent = emp.name;
+                        select.appendChild(option);
+                    });
+                    console.log('従業員リスト読み込み成功:', data.employees.length + '名');
+                } else {
+                    throw new Error('従業員データが空です');
+                }
             } catch (error) {
                 console.error('従業員リスト取得エラー:', error);
-                alert('従業員リストの取得に失敗しました');
+                select.innerHTML = '<option value="">エラー: 管理者に連絡してください</option>';
+                
+                // フォールバック: 直接名前を入力できるようにする
+                const nameGroup = select.parentElement;
+                nameGroup.innerHTML = `
+                    <label>氏名 <span class="required">*</span></label>
+                    <input type="text" id="name" placeholder="氏名を入力してください" required>
+                    <small style="color: #e53e3e; font-size: 12px;">※従業員リストの読み込みに失敗しました。直接入力してください。</small>
+                `;
             }
         }
 
