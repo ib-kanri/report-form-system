@@ -6,8 +6,7 @@
     <title>ミーティング報告フォーム</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f5f7fa; min-height: 100vh; padding: 20px;
-            overflow: hidden; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f5f7fa; min-height: 100vh; padding: 20px; }
         .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); }
         .header { background: #f5576c; color: white; padding: 24px; border-radius: 12px 12px 0 0; display: flex; justify-content: space-between; align-items: center; }
         .header h1 { font-size: 20px; font-weight: 600; }
@@ -47,6 +46,27 @@
         .participants-group { background: #f8f9fa; padding: 16px; border-radius: 8px; margin-top: 8px; }
         .participant-input { margin-bottom: 10px; }
         .submit-btn { width: 100%; padding: 16px; background: #f5576c; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; }
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 16px;
+            display: none;
+        }
+
+        .field-error {
+            border-color: #e53e3e !important;
+            background-color: #fff5f5 !important;
+        }
+
+        .error-text {
+            color: #e53e3e;
+            font-size: 12px;
+            margin-top: 4px;
+            display: none;
+        }
         @media (max-width: 480px) { .time-group { grid-template-columns: 1fr; } }
     </style>
 </head>
@@ -57,14 +77,17 @@
             <a href="index.html" class="back-btn">戻る</a>
         </div>
         <div class="form-content">
+            <div class="error-message" id="errorMessage"></div>
             <form id="meetingForm">
                 <div class="form-group">
                     <label>報告者氏名 <span class="required">*</span></label>
                     <select id="reporterName" required><option value="">読み込み中...</option></select>
+                    <div class="error-text" id="error-reporterName">報告者氏名を選択してください</div>
                 </div>
                 <div class="form-group">
                     <label>開催者氏名 <span class="required">*</span></label>
                     <select id="organizerName" required><option value="">読み込み中...</option></select>
+                    <div class="error-text" id="error-organizerName">開催者氏名を選択してください</div>
                 </div>
                 <div class="form-group">
                     <label>参加者 <span class="required">*</span></label>
@@ -79,21 +102,26 @@
                 <div class="form-group">
                     <label>実施日 <span class="required">*</span></label>
                     <input type="date" id="date" required>
+                    <div class="error-text" id="error-date">実施日を選択してください</div>
                 </div>
                 <div class="form-group">
                     <label>実施時間 <span class="required">*</span></label>
                     <div class="time-group">
-                        <div><input type="time" id="startTime" value="10:00" required><small style="color: #666;">開始時刻</small></div>
-                        <div><input type="time" id="endTime" value="19:00" required><small style="color: #666;">終了時刻</small></div>
+                        <div><input type="time" id="startTime" value="10:00" required>
+                    <div class="error-text" id="error-startTime">開始時刻を入力してください</div><small style="color: #666;">開始時刻</small></div>
+                        <div><input type="time" id="endTime" value="19:00" required>
+                    <div class="error-text" id="error-endTime">終了時刻を入力してください</div><small style="color: #666;">終了時刻</small></div>
                     </div>
                 </div>
                 <div class="form-group">
                     <label>ミーティングタイトル <span class="required">*</span></label>
                     <input type="text" id="title" placeholder="例: 週次定例ミーティング、プロジェクト進捗会議" required>
+                    <div class="error-text" id="error-title">ミーティングタイトルを入力してください</div>
                 </div>
                 <div class="form-group">
                     <label>ミーティング内容 <span class="required">*</span></label>
                     <textarea id="content" placeholder="例: 進捗確認、課題共有、次週のアクション決定" required></textarea>
+                    <div class="error-text" id="error-content">ミーティング内容を入力してください</div>
                 </div>
                 <div class="form-group">
                     <label>備考</label>
@@ -135,7 +163,23 @@
 
         document.getElementById('meetingForm').addEventListener('submit', async function(e) {
             e.preventDefault();
+
+            // バリデーション実行
+            if (!validateForm()) {
+                return;
+            }
+
             const participants = [1,2,3,4,5].map(i => document.getElementById('participant'+i).value).filter(p => p.trim());
+            
+            // 参加者が最低1人いるかチェック
+            if (participants.length === 0) {
+                const errorMessage = document.getElementById('errorMessage');
+                errorMessage.textContent = '参加者を最低1人選択してください';
+                errorMessage.style.display = 'block';
+                errorMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                return;
+            }
+
             const data = {
                 type: 'ミーティング報告',
                 reporterName: document.getElementById('reporterName').value,
@@ -157,6 +201,63 @@
                 alert('送信エラー: ' + error.message);
             }
         });
+
+        // バリデーション関数
+        function validateForm() {
+            let isValid = true;
+            const errors = [];
+
+            // 全てのエラー表示をリセット
+            document.querySelectorAll('.error-text').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.field-error').forEach(el => el.classList.remove('field-error'));
+            document.getElementById('errorMessage').style.display = 'none';
+
+            // 必須フィールドのチェック
+            const requiredFields = [
+                { id: 'reporterName', name: '報告者氏名' },
+                { id: 'organizerName', name: '開催者氏名' },
+                { id: 'date', name: '実施日' },
+                { id: 'startTime', name: '開始時刻' },
+                { id: 'endTime', name: '終了時刻' },
+                { id: 'title', name: 'ミーティングタイトル' },
+                { id: 'content', name: 'ミーティング内容' }
+            ];
+
+            requiredFields.forEach(field => {
+                const element = document.getElementById(field.id);
+                const value = element.value.trim();
+
+                if (!value) {
+                    isValid = false;
+                    errors.push(field.name);
+                    element.classList.add('field-error');
+                    const errorText = document.getElementById('error-' + field.id);
+                    if (errorText) {
+                        errorText.style.display = 'block';
+                    }
+                }
+            });
+
+            // 時刻の妥当性チェック
+            const startTime = document.getElementById('startTime').value;
+            const endTime = document.getElementById('endTime').value;
+            if (startTime && endTime && startTime >= endTime) {
+                isValid = false;
+                errors.push('時刻設定が不正です（開始時刻が終了時刻より後になっています）');
+                document.getElementById('startTime').classList.add('field-error');
+                document.getElementById('endTime').classList.add('field-error');
+            }
+
+            // エラーメッセージ表示
+            if (!isValid) {
+                const errorMessage = document.getElementById('errorMessage');
+                errorMessage.textContent = '入力内容に不備があります。以下の項目を確認してください:\n' + errors.join('、');
+                errorMessage.style.display = 'block';
+                errorMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+
+            return isValid;
+        }
     </script>
 </body>
 </html>
