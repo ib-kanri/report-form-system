@@ -23,7 +23,7 @@
             margin: 0 auto;
             background: white;
             border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); overflow-x: hidden;
         }
 
         .header {
@@ -116,27 +116,6 @@
             background: #f5576c;
             color: white;
         }
-        .error-message {
-            background: #fee;
-            color: #c33;
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 14px;
-            margin-bottom: 16px;
-            display: none;
-        }
-
-        .field-error {
-            border-color: #e53e3e !important;
-            background-color: #fff5f5 !important;
-        }
-
-        .error-text {
-            color: #e53e3e;
-            font-size: 12px;
-            margin-top: 4px;
-            display: none;
-        }
 
         .section-title {
             font-size: 16px;
@@ -156,7 +135,6 @@
         </div>
 
         <div class="form-content">
-            <div class="error-message" id="errorMessage"></div>
             <div class="summary-box">
                 <div class="summary-item">
                     <span>氏名:</span>
@@ -256,24 +234,9 @@
             div.className = 'form-group';
             div.innerHTML = `
                 <label>${item.label}</label>
-                <input type="text" id="${item.key}" value="0" inputmode="numeric">
-                <div class="error-text" id="error-${item.key}">半角数字で入力してください</div>
+                <input type="number" id="${item.key}" value="0" min="0">
             `;
             form.appendChild(div);
-        });
-
-        // 全ての入力フィールドに半角数字制限を追加
-        document.querySelectorAll('#performanceForm input[type="text"]').forEach(input => {
-            input.addEventListener('input', function(e) {
-                // 全角数字を半角に変換
-                let value = e.target.value;
-                value = value.replace(/[０-９]/g, function(s) {
-                    return String.fromCharCode(s.charCodeAt(0) - 0xFEE0);
-                });
-                // 数字以外を削除
-                value = value.replace(/[^\d]/g, '');
-                e.target.value = value;
-            });
         });
 
         function goBack() {
@@ -283,8 +246,6 @@
         }
 
         async function submitForm() {
-            if (!validatePerformanceForm()) return;
-
             // 実績データを収集
             const performanceData = {};
             KUBUN_ITEMS[kubun].forEach(item => {
@@ -312,54 +273,6 @@
             } catch (error) {
                 alert('送信エラー: ' + error.message);
             }
-        }
-        // バリデーション関数
-        function validatePerformanceForm() {
-            let isValid = true;
-            const errors = [];
-
-            // エラー表示をリセット
-            document.querySelectorAll('.field-error').forEach(el => el.classList.remove('field-error'));
-            document.querySelectorAll('.error-text').forEach(el => el.style.display = 'none');
-            const errorMessage = document.getElementById('errorMessage');
-            errorMessage.style.display = 'none';
-
-            const inputs = document.querySelectorAll('#performanceForm input[type="text"]');
-            let hasValue = false;
-
-            inputs.forEach(input => {
-                const value = input.value.trim();
-                
-                // 値がある場合
-                if (value && value !== '0') {
-                    // 半角数字のみかチェック
-                    if (!/^\d+$/.test(value)) {
-                        isValid = false;
-                        errors.push(input.previousElementSibling.textContent + 'は半角数字で入力してください');
-                        input.classList.add('field-error');
-                        const errorText = document.getElementById('error-' + input.id);
-                        if (errorText) {
-                            errorText.style.display = 'block';
-                        }
-                    } else if (parseInt(value) > 0) {
-                        hasValue = true;
-                    }
-                }
-            });
-
-            // 最低1つの実績入力チェック
-            if (isValid && !hasValue) {
-                isValid = false;
-                errors.push('実績項目を最低1つ入力してください');
-            }
-
-            if (!isValid) {
-                errorMessage.textContent = '入力内容に不備があります: ' + errors.join('、');
-                errorMessage.style.display = 'block';
-                errorMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-
-            return isValid;
         }
     </script>
 </body>
