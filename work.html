@@ -16,7 +16,6 @@
             background: #f5f7fa;
             min-height: 100vh;
             padding: 20px;
-            overflow-x: hidden;
         }
 
         .container {
@@ -25,7 +24,6 @@
             background: white;
             border-radius: 12px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
         }
 
         .header {
@@ -55,7 +53,6 @@
 
         .form-content {
             padding: 20px 16px;
-            overflow-x: hidden;
         }
 
         .form-group {
@@ -84,6 +81,27 @@
             box-sizing: border-box;
             -webkit-box-sizing: border-box;
             -moz-box-sizing: border-box;
+        }
+
+        /* iOS Safari用の日付・時刻入力フィールドの特別対応 */
+        input[type="date"],
+        input[type="time"] {
+            width: 100%;
+            max-width: 100%;
+            padding: 10px 8px;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-color: #f8f9fa;
+        }
+
+        /* モバイル端末での調整 */
+        @media (max-width: 768px) {
+            input[type="date"],
+            input[type="time"] {
+                padding: 8px 6px;
+                font-size: 16px;
+            }
         }
 
         input:focus, select:focus, textarea:focus {
