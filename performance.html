@@ -87,8 +87,7 @@
             margin-bottom: 6px;
         }
 
-        input[type="number"],
-        input[type="text"] {
+        input[type="number"] {
             width: 100%;
             padding: 12px;
             border: 2px solid #e0e0e0;
@@ -101,6 +100,10 @@
             border-color: #f5576c;
         }
 
+        .amount-field {
+            position: relative;
+        }
+
         .amount-field::before {
             content: '¥';
             position: absolute;
@@ -109,10 +112,7 @@
             transform: translateY(-50%);
             color: #666;
             font-size: 16px;
-        }
-
-        .amount-field {
-            position: relative;
+            pointer-events: none;
         }
 
         .amount-field input {
@@ -184,125 +184,234 @@
     <script>
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz8ek1mpv7jemHJgdyP5BUysHeLaigtkicDvx7cAhv5J9It8zgMGjpTH2xMmuTxkrSbHA/exec';
 
-        // 稼働区分の定義
-        const KUBUN_ITEMS = {
-            'docomo稼働': [
-                {section: '【docomo】'},
-                {key: 'customer_count', label: '接客数', type: 'number'},
-                {key: 'new_contract', label: '新規', type: 'number'},
-                {key: 'mnp', label: 'MNP', type: 'number'},
-                {key: 'model_change', label: '機種変更', type: 'number'},
-                {key: 'fiber', label: '固定（光）', type: 'number'},
-                {key: 'home_router', label: '固定（ホームルーター）', type: 'number'},
-                {key: 'docomo_hikari', label: 'ドコモ光', type: 'number'},
-                {key: 'home_5g', label: 'home 5G', type: 'number'},
-                {key: 'dcard', label: 'd CARD', type: 'number'},
-                {key: 'dcard_gold', label: 'd CARD GOLD', type: 'number'},
-                {key: 'video', label: 'dTV/dアニメ', type: 'number'},
-                {key: 'plus_one', label: 'プラスワン', type: 'amount'},
-            ],
-            'ショップ稼働｜au・UQ': [
-                {section: '【au】'},
-                {key: 'au_customer_count', label: '接客数', type: 'number'},
-                {key: 'au_new_contract', label: '新規', type: 'number'},
-                {key: 'au_mnp', label: 'MNP', type: 'number'},
-                {key: 'au_model_change', label: '機種変更', type: 'number'},
-                {key: 'au_fiber', label: 'auひかり', type: 'number'},
-                {key: 'au_denki', label: 'auでんき', type: 'number'},
-                {key: 'au_smartbank', label: 'auスマートバンク', type: 'number'},
-                {key: 'au_pay_card', label: 'au PAY カード', type: 'number'},
-                {key: 'au_plus_one', label: 'プラスワン', type: 'amount'},
-                
-                {section: '【UQ mobile】'},
-                {key: 'uq_customer_count', label: '接客数', type: 'number'},
-                {key: 'uq_new_contract', label: '新規', type: 'number'},
-                {key: 'uq_mnp', label: 'MNP', type: 'number'},
-                {key: 'uq_model_change', label: '機種変更', type: 'number'},
-                {key: 'uq_selection', label: 'セレクション金額', type: 'amount'},
-            ],
-            '量販店稼働｜au・UQ': [
-                {section: '【au】'},
-                {key: 'au_customer_count', label: '接客数', type: 'number'},
-                {key: 'au_new_contract', label: '新規', type: 'number'},
-                {key: 'au_mnp', label: 'MNP', type: 'number'},
-                {key: 'au_model_change', label: '機種変更', type: 'number'},
-                {key: 'au_fiber', label: 'auひかり', type: 'number'},
-                {key: 'au_denki', label: 'auでんき', type: 'number'},
-                {key: 'au_smartbank', label: 'auスマートバンク', type: 'number'},
-                {key: 'au_pay_card', label: 'au PAY カード', type: 'number'},
-                {key: 'au_plus_one', label: 'プラスワン', type: 'amount'},
-                
-                {section: '【UQ mobile】'},
-                {key: 'uq_customer_count', label: '接客数', type: 'number'},
-                {key: 'uq_new_contract', label: '新規', type: 'number'},
-                {key: 'uq_mnp', label: 'MNP', type: 'number'},
-                {key: 'uq_model_change', label: '機種変更', type: 'number'},
-                {key: 'uq_selection', label: 'セレクション金額', type: 'amount'},
-            ],
-            'ショップ稼働｜SB・YM': [
-                {section: '【SoftBank】'},
-                {key: 'sb_customer_count', label: '接客数', type: 'number'},
-                {key: 'sb_new_contract', label: '新規', type: 'number'},
-                {key: 'sb_mnp', label: 'MNP', type: 'number'},
-                {key: 'sb_model_change', label: '機種変更', type: 'number'},
-                {key: 'sb_fiber', label: 'SoftBank 光', type: 'number'},
-                {key: 'sb_air', label: 'SoftBank Air', type: 'number'},
-                {key: 'sb_denki', label: 'おうちでんき', type: 'number'},
-                {key: 'sb_plus_one', label: 'プラスワン', type: 'amount'},
-                
-                {section: '【Y!mobile】'},
-                {key: 'ym_customer_count', label: '接客数', type: 'number'},
-                {key: 'ym_new_contract', label: '新規', type: 'number'},
-                {key: 'ym_mnp', label: 'MNP', type: 'number'},
-                {key: 'ym_model_change', label: '機種変更', type: 'number'},
-            ],
-            '量販店稼働｜SB・YM': [
-                {section: '【SoftBank】'},
-                {key: 'sb_customer_count', label: '接客数', type: 'number'},
-                {key: 'sb_new_contract', label: '新規', type: 'number'},
-                {key: 'sb_mnp', label: 'MNP', type: 'number'},
-                {key: 'sb_model_change', label: '機種変更', type: 'number'},
-                {key: 'sb_fiber', label: 'SoftBank 光', type: 'number'},
-                {key: 'sb_air', label: 'SoftBank Air', type: 'number'},
-                {key: 'sb_denki', label: 'おうちでんき', type: 'number'},
-                {key: 'sb_plus_one', label: 'プラスワン', type: 'amount'},
-                
-                {section: '【Y!mobile】'},
-                {key: 'ym_customer_count', label: '接客数', type: 'number'},
-                {key: 'ym_new_contract', label: '新規', type: 'number'},
-                {key: 'ym_mnp', label: 'MNP', type: 'number'},
-                {key: 'ym_model_change', label: '機種変更', type: 'number'},
-            ],
-            'J:COM': [
-                {key: 'customer_count', label: '接客数', type: 'number'},
-                {key: 'sdu_net', label: 'SDU（戸建て）-ネット', type: 'number'},
-                {key: 'sdu_tv', label: 'SDU（戸建て）-テレビ', type: 'number'},
-                {key: 'sdu_phone', label: 'SDU（戸建て）-電話', type: 'number'},
-                {key: 'mdu_net', label: 'MDU（集合住宅）-ネット', type: 'number'},
-                {key: 'mdu_tv', label: 'MDU（集合住宅）-テレビ', type: 'number'},
-                {key: 'mdu_phone', label: 'MDU（集合住宅）-電話', type: 'number'},
-            ],
-            '物販稼働': [
-                {key: 'sales_amount', label: '売上金額', type: 'amount'},
-                {key: 'sales_count', label: '販売個数', type: 'number'},
-                {key: 'customer_count', label: '接客数', type: 'number'},
-                {key: 'accessory', label: 'アクセサリー', type: 'number'},
-            ],
-            'FISTY稼働': [
-                {key: 'new_free', label: '新規（無料ユーザー）', type: 'number'},
-                {key: 'new_paid', label: '新規（有料ユーザー）', type: 'number'},
-                {key: 'pv', label: 'PV数', type: 'number'},
-                {key: 'negotiation', label: '商談数', type: 'number'},
-                {key: 'content', label: 'コンテンツ制作', type: 'number'},
-            ],
-            'インターン・イベント稼働': [
-                {key: 'approach', label: 'アプローチ数', type: 'number'},
-                {key: 'seating', label: '着座数', type: 'number'},
-                {key: 'contract', label: '成約数（トス含む）', type: 'number'},
-            ],
-        };
-
-        // URL パラメータから稼働区分を取得
+const KUBUN_ITEMS = {
+  'docomo稼働': [
+    {key: 'home5G', label: 'home5G', type: 'number'},
+    {key: 'homeでんわ', label: 'homeでんわ', type: 'number'},
+    {key: '光新規', label: '光新規', type: 'number'},
+    {key: '光事変', label: '光事変', type: 'number'},
+    {key: '光10ギガ', label: '光10ギガ', type: 'number'},
+    {key: '光転用', label: '光転用', type: 'number'},
+    {key: 'スカパー', label: 'スカパー', type: 'number'},
+    {key: 'H4D', label: 'H4D', type: 'number'},
+    {key: 'Disney+', label: 'Disney+', type: 'number'},
+    {key: '新規契約', label: '新規契約', type: 'number'},
+    {key: 'MNP', label: 'MNP', type: 'number'},
+    {key: '機種変更', label: '機種変更', type: 'number'},
+    {key: 'マイグレ', label: 'マイグレ', type: 'number'},
+    {key: 'タブレット', label: 'タブレット', type: 'number'},
+    {key: 'dカード', label: 'dカード', type: 'number'},
+    {key: 'GOLD', label: 'GOLD', type: 'number'},
+    {key: 'でんき', label: 'でんき', type: 'number'},
+  ],
+  'ショップ稼働｜au・UQ': [
+    {section: '【au】'},
+    {key: '新規契約', label: '新規契約', type: 'number'},
+    {key: 'MNP', label: 'MNP', type: 'number'},
+    {section: '【UQ mobile】'},
+    {key: '新規契約', label: '新規契約', type: 'number'},
+    {key: 'MNP', label: 'MNP', type: 'number'},
+    {key: 'UQ mobile→au', label: 'UQ mobile→au', type: 'number'},
+    {section: '【固定・その他】'},
+    {key: 'auひかり', label: 'auひかり', type: 'number'},
+    {key: 'BIGLOBE光', label: 'BIGLOBE光', type: 'number'},
+    {key: 'ケーブルトス', label: 'ケーブルトス', type: 'number'},
+    {key: '固定代替', label: '固定代替', type: 'number'},
+    {key: 'au PAYカード（シルバー）', label: 'au PAYカード（シルバー）', type: 'number'},
+    {key: 'au PAYカード（ゴールド）新規', label: 'au PAYカード（ゴールド）新規', type: 'number'},
+    {key: 'au PAYカード（ゴールド）ランクアップ', label: 'au PAYカード（ゴールド）ランクアップ', type: 'number'},
+    {key: 'じぶん銀行', label: 'じぶん銀行', type: 'number'},
+    {key: 'でんき', label: 'でんき', type: 'number'},
+    {key: 'ガス', label: 'ガス', type: 'number'},
+    {key: 'おうち', label: 'おうち', type: 'number'},
+    {key: '自転車', label: '自転車', type: 'number'},
+    {key: 'わんにゃん', label: 'わんにゃん', type: 'number'},
+    {key: 'プラスワン', label: 'プラスワン', type: 'amount'},
+  ],
+  '量販店稼働｜au・UQ': [
+    {section: '【au】'},
+    {key: '新規契約（ワンクロ）', label: '新規契約（ワンクロ）', type: 'number'},
+    {key: '新規契約（キャッチのみ）', label: '新規契約（キャッチのみ）', type: 'number'},
+    {key: '新規契約（登録のみ）', label: '新規契約（登録のみ）', type: 'number'},
+    {key: 'MNP（ワンクロ）', label: 'MNP（ワンクロ）', type: 'number'},
+    {key: 'MNP（キャッチのみ）', label: 'MNP（キャッチのみ）', type: 'number'},
+    {key: 'MNP（登録のみ）', label: 'MNP（登録のみ）', type: 'number'},
+    {key: '機種変更（ワンクロ）', label: '機種変更（ワンクロ）', type: 'number'},
+    {key: '機種変更（キャッチのみ）', label: '機種変更（キャッチのみ）', type: 'number'},
+    {key: '機種変更（登録のみ）', label: '機種変更（登録のみ）', type: 'number'},
+    {section: '【UQ mobile】'},
+    {key: '新規契約（ワンクロ）', label: '新規契約（ワンクロ）', type: 'number'},
+    {key: '新規契約（キャッチのみ）', label: '新規契約（キャッチのみ）', type: 'number'},
+    {key: '新規契約（登録のみ）', label: '新規契約（登録のみ）', type: 'number'},
+    {key: 'MNP（ワンクロ）', label: 'MNP（ワンクロ）', type: 'number'},
+    {key: 'MNP（キャッチのみ）', label: 'MNP（キャッチのみ）', type: 'number'},
+    {key: 'MNP（登録のみ）', label: 'MNP（登録のみ）', type: 'number'},
+    {key: 'UQ mobile→au（ワンクロ）', label: 'UQ mobile→au（ワンクロ）', type: 'number'},
+    {key: 'UQ mobile→au（キャッチのみ）', label: 'UQ mobile→au（キャッチのみ）', type: 'number'},
+    {key: 'UQ mobile→au（登録のみ）', label: 'UQ mobile→au（登録のみ）', type: 'number'},
+    {section: '【固定・その他】'},
+    {key: 'auひかり（ワンクロ）', label: 'auひかり（ワンクロ）', type: 'number'},
+    {key: 'auひかり（キャッチのみ）', label: 'auひかり（キャッチのみ）', type: 'number'},
+    {key: 'auひかり（登録のみ）', label: 'auひかり（登録のみ）', type: 'number'},
+    {key: 'BIGLOBE光（ワンクロ）', label: 'BIGLOBE光（ワンクロ）', type: 'number'},
+    {key: 'BIGLOBE光（キャッチのみ）', label: 'BIGLOBE光（キャッチのみ）', type: 'number'},
+    {key: 'BIGLOBE光（登録のみ）', label: 'BIGLOBE光（登録のみ）', type: 'number'},
+    {key: 'au PAYカード（ワンクロ）', label: 'au PAYカード（ワンクロ）', type: 'number'},
+    {key: 'au PAYカード（キャッチのみ）', label: 'au PAYカード（キャッチのみ）', type: 'number'},
+    {key: 'au PAYカード（登録のみ）', label: 'au PAYカード（登録のみ）', type: 'number'},
+    {key: 'au PAYカード（ゴールド）（ワンクロ）', label: 'au PAYカード（ゴールド）（ワンクロ）', type: 'number'},
+    {key: 'au PAYカード（ゴールド）（キャッチのみ）', label: 'au PAYカード（ゴールド）（キャッチのみ）', type: 'number'},
+    {key: 'au PAYカード（ゴールド）（登録のみ）', label: 'au PAYカード（ゴールド）（登録のみ）', type: 'number'},
+  ],
+  'ショップ稼働｜SB・YM': [
+    {section: '【SoftBank】'},
+    {key: '新規契約 iPhone', label: '新規契約 iPhone', type: 'number'},
+    {key: '新規契約 Android', label: '新規契約 Android', type: 'number'},
+    {key: '新規契約 SIM単体', label: '新規契約 SIM単体', type: 'number'},
+    {key: '新規契約 従来型', label: '新規契約 従来型', type: 'number'},
+    {key: '新規契約 タブレット', label: '新規契約 タブレット', type: 'number'},
+    {key: '新規契約 データカード', label: '新規契約 データカード', type: 'number'},
+    {key: '新規契約 その他', label: '新規契約 その他', type: 'number'},
+    {key: 'MNP iPhone', label: 'MNP iPhone', type: 'number'},
+    {key: 'MNP Android', label: 'MNP Android', type: 'number'},
+    {key: 'MNP SIM単体', label: 'MNP SIM単体', type: 'number'},
+    {key: 'MNP 従来型', label: 'MNP 従来型', type: 'number'},
+    {key: '機種変更 iPhone', label: '機種変更 iPhone', type: 'number'},
+    {key: '機種変更 Android', label: '機種変更 Android', type: 'number'},
+    {key: '機種変更 SIM単体', label: '機種変更 SIM単体', type: 'number'},
+    {key: '機種変更 従来型', label: '機種変更 従来型', type: 'number'},
+    {key: '機種変更 タブレット', label: '機種変更 タブレット', type: 'number'},
+    {key: '機種変更 データカード', label: '機種変更 データカード', type: 'number'},
+    {key: '機種変更 その他', label: '機種変更 その他', type: 'number'},
+    {key: '番号移行 iPhone', label: '番号移行 iPhone', type: 'number'},
+    {key: '番号移行 Android', label: '番号移行 Android', type: 'number'},
+    {key: '番号移行 SIM単体', label: '番号移行 SIM単体', type: 'number'},
+    {key: '番号移行 従来型', label: '番号移行 従来型', type: 'number'},
+    {section: '【Y!mobile】'},
+    {key: '新規契約 iPhone', label: '新規契約 iPhone', type: 'number'},
+    {key: '新規契約 Android', label: '新規契約 Android', type: 'number'},
+    {key: '新規契約 SIM単体', label: '新規契約 SIM単体', type: 'number'},
+    {key: '新規契約 データカード', label: '新規契約 データカード', type: 'number'},
+    {key: 'MNP iPhone', label: 'MNP iPhone', type: 'number'},
+    {key: 'MNP Android', label: 'MNP Android', type: 'number'},
+    {key: 'MNP SIM単体', label: 'MNP SIM単体', type: 'number'},
+    {key: '機種変更 iPhone', label: '機種変更 iPhone', type: 'number'},
+    {key: '機種変更 Android', label: '機種変更 Android', type: 'number'},
+    {key: '機種変更 SIM単体', label: '機種変更 SIM単体', type: 'number'},
+    {key: '機種変更 データカード', label: '機種変更 データカード', type: 'number'},
+    {key: '番号移行 iPhone', label: '番号移行 iPhone', type: 'number'},
+    {key: '番号移行 Android', label: '番号移行 Android', type: 'number'},
+    {key: '番号移行 SIM単体', label: '番号移行 SIM単体', type: 'number'},
+    {section: '【固定・その他】'},
+    {key: 'SoftBank光 新規契約', label: 'SoftBank光 新規契約', type: 'number'},
+    {key: 'SoftBank光 転用', label: 'SoftBank光 転用', type: 'number'},
+    {key: 'SoftBank光 事業者変更', label: 'SoftBank光 事業者変更', type: 'number'},
+    {key: 'SoftBank Air 新規契約', label: 'SoftBank Air 新規契約', type: 'number'},
+    {key: 'SoftBank Air 機種変更', label: 'SoftBank Air 機種変更', type: 'number'},
+    {key: 'SoftBank Air レンタル', label: 'SoftBank Air レンタル', type: 'number'},
+    {key: 'おうちでんわ', label: 'おうちでんわ', type: 'number'},
+    {key: 'PayPay設定', label: 'PayPay設定', type: 'number'},
+    {key: 'セレクション金額', label: 'セレクション金額', type: 'amount'},
+    {key: 'PayPayカード', label: 'PayPayカード', type: 'number'},
+    {key: 'PayPayカード ゴールド', label: 'PayPayカード ゴールド', type: 'number'},
+  ],
+  '量販店稼働｜SB・YM': [
+    {section: '【SoftBank】'},
+    {key: '新規契約 iPhone', label: '新規契約 iPhone', type: 'number'},
+    {key: '新規契約 Android', label: '新規契約 Android', type: 'number'},
+    {key: '新規契約 SIM単体', label: '新規契約 SIM単体', type: 'number'},
+    {key: '新規契約 従来型', label: '新規契約 従来型', type: 'number'},
+    {key: '新規契約 iPad', label: '新規契約 iPad', type: 'number'},
+    {key: '新規契約 Androidタブレット', label: '新規契約 Androidタブレット', type: 'number'},
+    {key: 'MNP iPhone', label: 'MNP iPhone', type: 'number'},
+    {key: 'MNP Android', label: 'MNP Android', type: 'number'},
+    {key: 'MNP SIM単体', label: 'MNP SIM単体', type: 'number'},
+    {key: 'MNP 従来型', label: 'MNP 従来型', type: 'number'},
+    {key: '機種変更 iPhone', label: '機種変更 iPhone', type: 'number'},
+    {key: '機種変更 Android', label: '機種変更 Android', type: 'number'},
+    {key: '機種変更 SIM単体', label: '機種変更 SIM単体', type: 'number'},
+    {key: '機種変更 従来型', label: '機種変更 従来型', type: 'number'},
+    {key: '機種変更 iPad', label: '機種変更 iPad', type: 'number'},
+    {key: '機種変更 Androidタブレット', label: '機種変更 Androidタブレット', type: 'number'},
+    {key: 'アップグレード iPhone', label: 'アップグレード iPhone', type: 'number'},
+    {key: 'アップグレード Android', label: 'アップグレード Android', type: 'number'},
+    {key: 'アップグレード SIM単体', label: 'アップグレード SIM単体', type: 'number'},
+    {key: 'アップグレード 従来型', label: 'アップグレード 従来型', type: 'number'},
+    {section: '【Y!mobile】'},
+    {key: '新規契約 iPhone', label: '新規契約 iPhone', type: 'number'},
+    {key: '新規契約 Android', label: '新規契約 Android', type: 'number'},
+    {key: '新規契約 SIM単体', label: '新規契約 SIM単体', type: 'number'},
+    {key: '新規契約 従来型', label: '新規契約 従来型', type: 'number'},
+    {key: '新規契約 タブレット', label: '新規契約 タブレット', type: 'number'},
+    {key: 'MNP iPhone', label: 'MNP iPhone', type: 'number'},
+    {key: 'MNP Android', label: 'MNP Android', type: 'number'},
+    {key: 'MNP SIM単体', label: 'MNP SIM単体', type: 'number'},
+    {key: 'MNP 従来型', label: 'MNP 従来型', type: 'number'},
+    {key: '機種変更 iPhone', label: '機種変更 iPhone', type: 'number'},
+    {key: '機種変更 Android', label: '機種変更 Android', type: 'number'},
+    {key: '機種変更 SIM単体', label: '機種変更 SIM単体', type: 'number'},
+    {key: '機種変更 従来型', label: '機種変更 従来型', type: 'number'},
+    {key: '機種変更 タブレット', label: '機種変更 タブレット', type: 'number'},
+    {key: 'ダウングレード iPhone', label: 'ダウングレード iPhone', type: 'number'},
+    {key: 'ダウングレード Android', label: 'ダウングレード Android', type: 'number'},
+    {key: 'ダウングレード SIM単体', label: 'ダウングレード SIM単体', type: 'number'},
+    {key: 'ダウングレード 従来型', label: 'ダウングレード 従来型', type: 'number'},
+    {section: '【固定・その他】'},
+    {key: 'SoftBank光', label: 'SoftBank光', type: 'number'},
+    {key: 'SoftBank Air 分割', label: 'SoftBank Air 分割', type: 'number'},
+    {key: 'SoftBank Air レンタル', label: 'SoftBank Air レンタル', type: 'number'},
+    {key: 'おうちでんわ', label: 'おうちでんわ', type: 'number'},
+  ],
+  'J:COM': [
+    {section: '【SDU/アップセル】'},
+    {key: 'シンスタンダードプラス', label: 'シンスタンダードプラス', type: 'number'},
+    {key: 'シンスタンダード', label: 'シンスタンダード', type: 'number'},
+    {key: 'スタンダード', label: 'スタンダード', type: 'number'},
+    {key: 'フレックス', label: 'フレックス', type: 'number'},
+    {key: 'セレクト', label: 'セレクト', type: 'number'},
+    {key: 'リンクミニ', label: 'リンクミニ', type: 'number'},
+    {key: '光10G/FTTH', label: '光10G/FTTH', type: 'number'},
+    {key: '光10G/au', label: '光10G/au', type: 'number'},
+    {key: '光1G/au', label: '光1G/au', type: 'number'},
+    {key: 'ドクシス1G', label: 'ドクシス1G', type: 'number'},
+    {key: '固定電話', label: '固定電話', type: 'number'},
+    {section: '【MDU/アップセル】'},
+    {key: 'シンスタンダードプラス', label: 'シンスタンダードプラス', type: 'number'},
+    {key: 'シンスタンダード（通常）', label: 'シンスタンダード（通常）', type: 'number'},
+    {key: 'シンスタンダード（相対）', label: 'シンスタンダード（相対）', type: 'number'},
+    {key: 'シンスタンダード（バルク）', label: 'シンスタンダード（バルク）', type: 'number'},
+    {key: 'スタンダード', label: 'スタンダード', type: 'number'},
+    {key: 'フレックス', label: 'フレックス', type: 'number'},
+    {key: 'セレクト', label: 'セレクト', type: 'number'},
+    {key: 'リンクミニ', label: 'リンクミニ', type: 'number'},
+    {key: 'ドクシス1G（通常）', label: 'ドクシス1G（通常）', type: 'number'},
+    {key: 'ドクシス1G（相対）', label: 'ドクシス1G（相対）', type: 'number'},
+    {key: 'ドクシス1G（バルク）', label: 'ドクシス1G（バルク）', type: 'number'},
+    {key: 'ドクシス320M（通常）', label: 'ドクシス320M（通常）', type: 'number'},
+    {key: 'ドクシス320M（相対）', label: 'ドクシス320M（相対）', type: 'number'},
+    {key: 'ドクシス320M（バルク）', label: 'ドクシス320M（バルク）', type: 'number'},
+    {key: '固定電話', label: '固定電話', type: 'number'},
+  ],
+  '物販稼働': [
+    {key: 'アプローチ数', label: 'アプローチ数', type: 'number'},
+    {key: '提案数', label: '提案数', type: 'number'},
+    {key: '販売台数（自メーカー）', label: '販売台数（自メーカー）', type: 'number'},
+    {key: '販売台数（他メーカー）', label: '販売台数（他メーカー）', type: 'number'},
+  ],
+  'FISTY稼働': [
+    {key: '新規（無料ユーザー）', label: '新規（無料ユーザー）', type: 'number'},
+    {key: '新規（有料ユーザー）', label: '新規（有料ユーザー）', type: 'number'},
+    {key: 'PV数', label: 'PV数', type: 'number'},
+    {key: '商談数', label: '商談数', type: 'number'},
+    {key: 'コンテンツ制作', label: 'コンテンツ制作', type: 'number'},
+  ],
+  'インターン・イベント稼働': [
+    {key: 'アプローチ数', label: 'アプローチ数', type: 'number'},
+    {key: '着座数', label: '着座数', type: 'number'},
+    {key: '成約数（トス含む）', label: '成約数（トス含む）', type: 'number'},
+  ],
+};
+        // URLパラメータから稼働区分を取得
         const urlParams = new URLSearchParams(window.location.search);
         const kubun = urlParams.get('kubun');
 
@@ -338,27 +447,17 @@
                     div.innerHTML = `
                         <label>${item.label}</label>
                         <div class="amount-field">
-                            <input type="text" id="${item.key}" value="0" inputmode="numeric">
+                            <input type="number" id="field_${item.key}" data-key="${item.key}" value="0" min="0">
                         </div>
                     `;
                 } else {
                     div.innerHTML = `
                         <label>${item.label}</label>
-                        <input type="number" id="${item.key}" value="0" min="0">
+                        <input type="number" id="field_${item.key}" data-key="${item.key}" value="0" min="0">
                     `;
                 }
                 form.appendChild(div);
             }
-        });
-
-        // 金額フィールドに半角数字制限を追加
-        document.querySelectorAll('.amount-field input').forEach(input => {
-            input.addEventListener('input', function(e) {
-                let value = e.target.value;
-                value = value.replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0));
-                value = value.replace(/[^\d]/g, '');
-                e.target.value = value;
-            });
         });
 
         function goBack() {
@@ -370,11 +469,11 @@
         async function submitForm() {
             // 実績データを収集
             const performanceData = {};
-            KUBUN_ITEMS[kubun].forEach(item => {
-                if (item.key) {
-                    const value = document.getElementById(item.key).value;
-                    performanceData[item.key] = value || '0';
-                }
+            const inputs = document.querySelectorAll('input[data-key]');
+            
+            inputs.forEach(input => {
+                const key = input.getAttribute('data-key');
+                performanceData[key] = input.value || '0';
             });
 
             // 業務報告データと実績データを結合
