@@ -48,7 +48,7 @@
         }
 
         .form-group {
-            margin-bottom: 24px;
+            margin-bottom: 20px;
         }
 
         label {
@@ -56,14 +56,17 @@
             font-size: 14px;
             font-weight: 500;
             margin-bottom: 8px;
+            color: #333;
         }
 
+        input[type="text"],
         input[type="password"] {
             width: 100%;
             padding: 14px;
             border: 2px solid #e0e0e0;
             border-radius: 8px;
             font-size: 16px;
+            transition: border-color 0.3s;
         }
 
         input:focus {
@@ -107,6 +110,26 @@
             display: block;
         }
 
+        .user-info {
+            background: #f8f9fa;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .user-info .id {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+
+        .user-info .name {
+            font-weight: 600;
+            font-size: 18px;
+            color: #333;
+        }
+
         .menu-item {
             display: block;
             padding: 18px 24px;
@@ -139,9 +162,17 @@
         }
 
         .logout-btn {
+            width: 100%;
+            padding: 16px;
             margin-top: 24px;
             background: #e0e0e0;
             color: #666;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
         }
 
         .logout-btn:hover {
@@ -160,25 +191,30 @@
 
         <div class="content">
             <div id="loginForm">
-                <div class="error" id="errorMsg">パスワードが正しくありません</div>
+                <div class="error" id="errorMsg"></div>
+                <div class="form-group">
+                    <label for="employeeId">社員ID</label>
+                    <input type="text" id="employeeId" placeholder="例: EMP001" autofocus>
+                </div>
                 <div class="form-group">
                     <label for="password">パスワード</label>
-                    <input type="password" id="password" placeholder="パスワードを入力">
+                    <input type="password" id="password" placeholder="4桁の数字">
                 </div>
                 <button class="btn" onclick="login()">ログイン</button>
             </div>
 
             <div class="menu" id="menu">
+                <div class="user-info" id="userInfo"></div>
                 <a href="work.html" class="menu-item">業務報告</a>
                 <a href="meeting.html" class="menu-item">ミーティング報告</a>
                 <a href="training.html" class="menu-item">研修報告</a>
-                <button class="btn logout-btn" onclick="logout()">ログアウト</button>
+                <button class="logout-btn" onclick="logout()">ログアウト</button>
             </div>
         </div>
     </div>
 
     <script>
-        const CORRECT_PASSWORD = '1601';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz8ek1mpv7jemHJgdyP5BUysHeLaigtkicDvx7cAhv5J9It8zgMGjpTH2xMmuTxkrSbHA/exec';
 
         window.onload = function() {
             if (sessionStorage.getItem('authenticated') === 'true') {
@@ -186,42 +222,95 @@
             }
         };
 
+        // Enterキーでログイン
+        document.getElementById('employeeId').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('password').focus();
+            }
+        });
+
         document.getElementById('password').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') login();
         });
 
-        function login() {
-            const password = document.getElementById('password').value;
+        async function login() {
+            const employeeId = document.getElementById('employeeId').value.trim();
+            const password = document.getElementById('password').value.trim();
             const errorMsg = document.getElementById('errorMsg');
 
-            if (password === CORRECT_PASSWORD) {
-                sessionStorage.setItem('authenticated', 'true');
-                showMenu();
-            } else {
-                errorMsg.style.display = 'block';
-                document.getElementById('password').value = '';
-                setTimeout(() => errorMsg.style.display = 'none', 3000);
+            if (!employeeId || !password) {
+                showError('社員IDとパスワードを入力してください');
+                return;
             }
+
+            try {
+                // 認証API呼び出し
+                const response = await fetch(SCRIPT_URL + '?action=authenticate', {
+                    method: 'POST',
+                    mode: 'cors',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        employeeId: employeeId,
+                        password: password
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // ログイン成功
+                    sessionStorage.setItem('authenticated', 'true');
+                    sessionStorage.setItem('employeeId', data.employeeId);
+                    sessionStorage.setItem('employeeName', data.employeeName);
+                    sessionStorage.setItem('department', data.department);
+                    sessionStorage.setItem('team', data.team);
+                    
+                    showMenu();
+                } else {
+                    showError('社員IDまたはパスワードが正しくありません');
+                    document.getElementById('password').value = '';
+                }
+            } catch (error) {
+                console.error('認証エラー:', error);
+                showError('認証処理でエラーが発生しました');
+            }
+        }
+
+        function showError(message) {
+            const errorMsg = document.getElementById('errorMsg');
+            errorMsg.textContent = message;
+            errorMsg.style.display = 'block';
+            setTimeout(() => errorMsg.style.display = 'none', 5000);
         }
 
         function showMenu() {
             document.getElementById('loginForm').style.display = 'none';
             document.getElementById('menu').classList.add('active');
             
+            // ユーザー情報を表示
+            const userInfo = document.getElementById('userInfo');
+            const employeeId = sessionStorage.getItem('employeeId');
+            const employeeName = sessionStorage.getItem('employeeName');
+            
+            userInfo.innerHTML = `
+                <div class="id">${employeeId}</div>
+                <div class="name">${employeeName}</div>
+            `;
+            
             // メニューアイテムのフォーカスを削除
             document.querySelectorAll('.menu-item').forEach(item => {
                 item.addEventListener('click', function() {
                     this.blur();
                 });
-                item.blur(); // 初期表示時にもフォーカスを外す
+                item.blur();
             });
         }
 
         function logout() {
-            sessionStorage.removeItem('authenticated');
-            sessionStorage.removeItem('workData');
+            sessionStorage.clear();
             document.getElementById('loginForm').style.display = 'block';
             document.getElementById('menu').classList.remove('active');
+            document.getElementById('employeeId').value = '';
             document.getElementById('password').value = '';
         }
     </script>

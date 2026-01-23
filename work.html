@@ -79,29 +79,12 @@
             border-radius: 8px;
             font-size: 16px;
             box-sizing: border-box;
-            -webkit-box-sizing: border-box;
-            -moz-box-sizing: border-box;
         }
 
-        /* iOS Safari用の日付・時刻入力フィールドの特別対応 */
         input[type="date"],
         input[type="time"] {
-            width: 100%;
-            max-width: 100%;
             padding: 10px 8px;
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            appearance: none;
             background-color: #f8f9fa;
-        }
-
-        /* モバイル端末での調整 */
-        @media (max-width: 768px) {
-            input[type="date"],
-            input[type="time"] {
-                padding: 8px 6px;
-                font-size: 16px;
-            }
         }
 
         input:focus, select:focus, textarea:focus {
@@ -121,6 +104,30 @@
             gap: 12px;
         }
 
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            margin-right: 8px;
+        }
+
+        .conditional-field {
+            margin-left: 24px;
+            margin-top: 8px;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            display: none;
+        }
+
+        .conditional-field.active {
+            display: block;
+        }
+
         .submit-btn {
             width: 100%;
             padding: 16px;
@@ -131,28 +138,6 @@
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-        }
-
-        .error-message {
-            background: #fee;
-            color: #c33;
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 14px;
-            margin-bottom: 16px;
-            display: none;
-        }
-
-        .field-error {
-            border-color: #e53e3e !important;
-            background-color: #fff5f5 !important;
-        }
-
-        .error-text {
-            color: #e53e3e;
-            font-size: 12px;
-            margin-top: 4px;
-            display: none;
         }
 
         .calc-result {
@@ -173,17 +158,33 @@
             color: #856404;
         }
 
-        .loading {
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 16px;
             display: none;
-            text-align: center;
-            padding: 20px;
-            color: #667eea;
+        }
+
+        .field-error {
+            border-color: #e53e3e !important;
+            background-color: #fff5f5 !important;
+        }
+
+        .location-status {
+            background: #e8f5e9;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #2e7d32;
+            margin-bottom: 16px;
         }
 
         @media (max-width: 480px) {
             .time-group {
                 grid-template-columns: 1fr;
-                gap: 12px;
             }
         }
     </style>
@@ -196,29 +197,30 @@
         </div>
 
         <div class="form-content">
+            <div class="location-status" id="locationStatus">📍 位置情報を取得中...</div>
             <div class="error-message" id="errorMessage"></div>
+            
             <form id="workForm">
                 <div class="form-group">
-                    <label>氏名 <span class="required">*</span></label>
-                    <select id="name" required>
-                        <option value="">読み込み中...</option>
-                    </select>
-                    <div class="error-text" id="error-name">氏名を選択してください</div>
+                    <label>氏名</label>
+                    <input type="text" id="name" readonly style="background: #f5f5f5;">
                 </div>
 
                 <div class="form-group">
                     <label>日付 <span class="required">*</span></label>
                     <input type="date" id="date" required>
-                    <div class="error-text" id="error-date">日付を選択してください</div>
                 </div>
 
                 <div class="form-group">
                     <label>稼働区分 <span class="required">*</span></label>
                     <select id="kubun" required>
                         <option value="">選択してください</option>
-                        <option value="">選択してください</option>
-                        <option value="キャリア稼働">キャリア稼働</option>
-                        <option value="J:com稼働">J:com稼働</option>
+                        <option value="docomo稼働">docomo稼働</option>
+                        <option value="ショップ稼働｜au・UQ">ショップ稼働｜au・UQ</option>
+                        <option value="量販店稼働｜au・UQ">量販店稼働｜au・UQ</option>
+                        <option value="ショップ稼働｜SB・YM">ショップ稼働｜SB・YM</option>
+                        <option value="量販店稼働｜SB・YM">量販店稼働｜SB・YM</option>
+                        <option value="J:COM">J:COM</option>
                         <option value="物販稼働">物販稼働</option>
                         <option value="FISTY稼働">FISTY稼働</option>
                         <option value="インターン・イベント稼働">インターン・イベント稼働</option>
@@ -233,7 +235,6 @@
                 <div class="form-group">
                     <label>稼働先 <span class="required">*</span></label>
                     <input type="text" id="workplace" placeholder="例: A社、B店舗" required>
-                    <div class="error-text" id="error-workplace">稼働先を入力してください</div>
                 </div>
 
                 <div class="form-group">
@@ -254,7 +255,6 @@
                     <label>休憩時間 <span class="required">*</span></label>
                     <select id="breakTime" required>
                         <option value="">選択してください</option>
-                        <option value="">選択してください</option>
                         <option value="0">0分</option>
                         <option value="15">15分</option>
                         <option value="30">30分</option>
@@ -265,8 +265,30 @@
                         <option value="105">105分</option>
                         <option value="120">120分</option>
                     </select>
-                    <div class="calc-result" id="calcResult" style="display: none;"></div>
                 </div>
+
+                <!-- 遅刻 -->
+                <div class="checkbox-group">
+                    <input type="checkbox" id="lateCheck">
+                    <label for="lateCheck" style="margin-bottom: 0;">遅刻あり</label>
+                </div>
+                <div class="conditional-field" id="lateField">
+                    <label>遅刻時間（分）</label>
+                    <input type="number" id="lateMinutes" min="0" placeholder="例: 30">
+                </div>
+
+                <!-- 早退 -->
+                <div class="checkbox-group">
+                    <input type="checkbox" id="earlyCheck">
+                    <label for="earlyCheck" style="margin-bottom: 0;">早退あり</label>
+                </div>
+                <div class="conditional-field" id="earlyField">
+                    <label>早退時刻</label>
+                    <input type="time" id="earlyTime">
+                    <small style="color: #666; display: block; margin-top: 4px;">※稼働先の定時終了時刻を入力してください</small>
+                </div>
+
+                <div class="calc-result" id="calcResult" style="display: none;"></div>
 
                 <div class="form-group">
                     <label>経路</label>
@@ -276,93 +298,93 @@
                 <div class="form-group">
                     <label>交通費</label>
                     <input type="text" id="transportCost" placeholder="例: 1200（半角数字で入力）" inputmode="numeric">
-                    <div class="error-text" id="error-transportCost">半角数字で入力してください</div>
+                </div>
+
+                <!-- 定期利用 -->
+                <div class="checkbox-group">
+                    <input type="checkbox" id="commuterCheck">
+                    <label for="commuterCheck" style="margin-bottom: 0;">定期区間を利用</label>
+                </div>
+                <div class="conditional-field" id="commuterField">
+                    <div style="margin-bottom: 12px;">
+                        <label>定期区間</label>
+                        <input type="text" id="commuterRoute" placeholder="例: 自宅〜渋谷">
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label>定期購入月</label>
+                        <input type="month" id="commuterMonth">
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label>定期代（円）</label>
+                        <input type="text" id="commuterCost" placeholder="例: 10000" inputmode="numeric">
+                    </div>
+                    <div>
+                        <label>備考</label>
+                        <input type="text" id="transportRemarks" placeholder="例: 〇〇駅で途中下車したため+200円">
+                    </div>
                 </div>
 
                 <div class="form-group">
                     <label>業務内容 <span class="required">*</span></label>
                     <textarea id="content" placeholder="例: 接客対応、新規契約案内、機種変更対応、光回線提案、店舗清掃など" required></textarea>
-                    <div class="error-text" id="error-content">業務内容を入力してください</div>
                 </div>
 
                 <div class="form-group">
                     <label>所感 <span class="required">*</span></label>
                     <textarea id="impression" placeholder="例: 新規契約3件獲得できた、お客様対応が丁寧にできた、混雑時の対応に課題を感じたなど" required></textarea>
-                    <div class="error-text" id="error-impression">所感を入力してください</div>
                 </div>
 
                 <button type="submit" class="submit-btn">次へ進む</button>
             </form>
-
-            <div class="loading" id="loading">処理中...</div>
         </div>
     </div>
 
     <script>
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzeIlgb5tbQXEStT0Q2xdh-ICYFJeMWZbcvlSK6GnNnbKNe1w49Per_ymvrZd9t-IsXrA/exec';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz8ek1mpv7jemHJgdyP5BUysHeLaigtkicDvx7cAhv5J9It8zgMGjpTH2xMmuTxkrSbHA/exec';
 
         // 認証チェック
         if (sessionStorage.getItem('authenticated') !== 'true') {
+            alert('ログインが必要です');
             window.location.href = 'index.html';
         }
+
+        // ユーザー情報を表示
+        document.getElementById('name').value = sessionStorage.getItem('employeeName');
+
+        // 位置情報取得
+        let userLocation = null;
+        navigator.geolocation.getCurrentPosition(
+            function(position) {
+                userLocation = {
+                    latitude: position.coords.latitude,
+                    longitude: position.coords.longitude,
+                    accuracy: position.coords.accuracy,
+                    timestamp: new Date().toISOString()
+                };
+                document.getElementById('locationStatus').textContent = '📍 位置情報取得完了';
+                document.getElementById('locationStatus').style.background = '#e8f5e9';
+            },
+            function(error) {
+                document.getElementById('locationStatus').textContent = '⚠️ 位置情報取得失敗（位置情報なしで送信されます）';
+                document.getElementById('locationStatus').style.background = '#fff3cd';
+                document.getElementById('locationStatus').style.color = '#856404';
+            }
+        );
 
         // 今日の日付をデフォルト設定
         document.getElementById('date').valueAsDate = new Date();
 
-        // 従業員リストを動的に読み込み
-        async function loadEmployees() {
-            const select = document.getElementById('name');
-            try {
-                const response = await fetch(SCRIPT_URL + '?action=getEmployees', {
-                    method: 'GET',
-                    mode: 'cors'
-                });
-                
-                if (!response.ok) {
-                    throw new Error('HTTP error: ' + response.status);
-                }
-                
-                const data = await response.json();
-                
-                select.innerHTML = '<option value="">選択してください</option>';
-                
-                if (data.employees && data.employees.length > 0) {
-                    data.employees.forEach(emp => {
-                        const option = document.createElement('option');
-                        option.value = emp.name;
-                        option.textContent = emp.name;
-                        select.appendChild(option);
-                    });
-                    console.log('従業員リスト読み込み成功:', data.employees.length + '名');
-                } else {
-                    throw new Error('従業員データが空です');
-                }
-            } catch (error) {
-                console.error('従業員リスト取得エラー:', error);
-                select.innerHTML = '<option value="">エラー: 管理者に連絡してください</option>';
-                
-                // フォールバック: 直接名前を入力できるようにする
-                const nameGroup = select.parentElement;
-                nameGroup.innerHTML = `
-                    <label>氏名 <span class="required">*</span></label>
-                    <input type="text" id="name" placeholder="氏名を入力してください" required>
-                    <small style="color: #e53e3e; font-size: 12px;">※従業員リストの読み込みに失敗しました。直接入力してください。</small>
-                `;
-            }
-        }
+        // 条件付きフィールドの表示切り替え
+        document.getElementById('lateCheck').addEventListener('change', function() {
+            document.getElementById('lateField').classList.toggle('active', this.checked);
+        });
 
-        loadEmployees();
+        document.getElementById('earlyCheck').addEventListener('change', function() {
+            document.getElementById('earlyField').classList.toggle('active', this.checked);
+        });
 
-        // 半角数字のみ入力を許可
-        document.getElementById('transportCost').addEventListener('input', function(e) {
-            // 全角数字を半角に変換
-            let value = e.target.value;
-            value = value.replace(/[０-９]/g, function(s) {
-                return String.fromCharCode(s.charCodeAt(0) - 0xFEE0);
-            });
-            // 数字以外を削除
-            value = value.replace(/[^\d]/g, '');
-            e.target.value = value;
+        document.getElementById('commuterCheck').addEventListener('change', function() {
+            document.getElementById('commuterField').classList.toggle('active', this.checked);
         });
 
         // 実働時間の自動計算
@@ -370,17 +392,29 @@
             const startTime = document.getElementById('startTime').value;
             const endTime = document.getElementById('endTime').value;
             const breakTime = parseInt(document.getElementById('breakTime').value) || 0;
+            const lateMinutes = document.getElementById('lateCheck').checked ? 
+                (parseInt(document.getElementById('lateMinutes').value) || 0) : 0;
+            
+            let earlyMinutes = 0;
+            if (document.getElementById('earlyCheck').checked && document.getElementById('earlyTime').value && endTime) {
+                const earlyTime = document.getElementById('earlyTime').value;
+                const early = new Date('2000-01-01 ' + earlyTime);
+                const end = new Date('2000-01-01 ' + endTime);
+                earlyMinutes = (early - end) / (1000 * 60);
+            }
 
             if (startTime && endTime) {
                 const start = new Date('2000-01-01 ' + startTime);
                 const end = new Date('2000-01-01 ' + endTime);
-                const diffHours = (end - start) / (1000 * 60 * 60);
-                const workHours = diffHours - (breakTime / 60);
+                const diffMinutes = (end - start) / (1000 * 60);
+                const workMinutes = diffMinutes - breakTime - lateMinutes - earlyMinutes;
 
-                if (workHours > 0) {
+                if (workMinutes > 0) {
+                    const hours = Math.floor(workMinutes / 60);
+                    const minutes = workMinutes % 60;
                     document.getElementById('calcResult').style.display = 'block';
                     document.getElementById('calcResult').textContent = 
-                        `実働時間: ${workHours.toFixed(2)}時間`;
+                        `実働時間: ${hours}時間${minutes}分（${(workMinutes / 60).toFixed(2)}時間）`;
                 }
             }
         }
@@ -388,11 +422,29 @@
         document.getElementById('startTime').addEventListener('change', calculateWorkTime);
         document.getElementById('endTime').addEventListener('change', calculateWorkTime);
         document.getElementById('breakTime').addEventListener('change', calculateWorkTime);
+        document.getElementById('lateCheck').addEventListener('change', calculateWorkTime);
+        document.getElementById('lateMinutes').addEventListener('input', calculateWorkTime);
+        document.getElementById('earlyCheck').addEventListener('change', calculateWorkTime);
+        document.getElementById('earlyTime').addEventListener('change', calculateWorkTime);
+
+        // 半角数字のみ入力を許可
+        ['transportCost', 'commuterCost', 'lateMinutes'].forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.addEventListener('input', function(e) {
+                    let value = e.target.value;
+                    value = value.replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0));
+                    value = value.replace(/[^\d]/g, '');
+                    e.target.value = value;
+                });
+            }
+        });
 
         // 稼働区分選択時の情報表示
         document.getElementById('kubun').addEventListener('change', function() {
             const kubunInfo = document.getElementById('kubunInfo');
-            const performanceKubun = ['キャリア稼働', 'J:com稼働', '物販稼働', 'FISTY稼働', 'インターン・イベント稼働'];
+            const performanceKubun = ['docomo稼働', 'ショップ稼働｜au・UQ', '量販店稼働｜au・UQ', 
+                'ショップ稼働｜SB・YM', '量販店稼働｜SB・YM', 'J:COM', '物販稼働', 'FISTY稼働', 'インターン・イベント稼働'];
             
             if (performanceKubun.includes(this.value)) {
                 kubunInfo.style.display = 'block';
@@ -405,16 +457,13 @@
         document.getElementById('workForm').addEventListener('submit', function(e) {
             e.preventDefault();
 
-            // バリデーション実行
-            if (!validateForm()) {
-                return;
-            }
-
             const kubun = document.getElementById('kubun').value;
-            const performanceKubun = ['キャリア稼働', 'J:com稼働', '物販稼働', 'FISTY稼働', 'インターン・イベント稼働'];
+            const performanceKubun = ['docomo稼働', 'ショップ稼働｜au・UQ', '量販店稼働｜au・UQ', 
+                'ショップ稼働｜SB・YM', '量販店稼働｜SB・YM', 'J:COM', '物販稼働', 'FISTY稼働', 'インターン・イベント稼働'];
             
             // データをsessionStorageに保存
             const workData = {
+                employeeId: sessionStorage.getItem('employeeId'),
                 name: document.getElementById('name').value,
                 date: document.getElementById('date').value,
                 kubun: kubun,
@@ -422,10 +471,25 @@
                 startTime: document.getElementById('startTime').value,
                 endTime: document.getElementById('endTime').value,
                 breakTime: document.getElementById('breakTime').value,
+                lateFlag: document.getElementById('lateCheck').checked ? '遅刻' : '',
+                lateMinutes: document.getElementById('lateCheck').checked ? 
+                    (document.getElementById('lateMinutes').value || '0') : '0',
+                earlyFlag: document.getElementById('earlyCheck').checked ? '早退' : '',
+                earlyTime: document.getElementById('earlyCheck').checked ? 
+                    document.getElementById('earlyTime').value : '',
                 route: document.getElementById('route').value,
                 transportCost: document.getElementById('transportCost').value,
+                commuterFlag: document.getElementById('commuterCheck').checked ? '定期利用' : '',
+                commuterRoute: document.getElementById('commuterCheck').checked ? 
+                    document.getElementById('commuterRoute').value : '',
+                commuterMonth: document.getElementById('commuterCheck').checked ? 
+                    document.getElementById('commuterMonth').value : '',
+                commuterCost: document.getElementById('commuterCheck').checked ? 
+                    document.getElementById('commuterCost').value : '',
+                transportRemarks: document.getElementById('transportRemarks').value,
                 content: document.getElementById('content').value,
                 impression: document.getElementById('impression').value,
+                location: userLocation,
                 timestamp: new Date().toLocaleString('ja-JP')
             };
 
@@ -439,86 +503,8 @@
             }
         });
 
-        // バリデーション関数
-        function validateForm() {
-            let isValid = true;
-            const errors = [];
-
-            // 全てのエラー表示をリセット
-            document.querySelectorAll('.error-text').forEach(el => el.style.display = 'none');
-            document.querySelectorAll('.field-error').forEach(el => el.classList.remove('field-error'));
-            document.getElementById('errorMessage').style.display = 'none';
-
-            // 必須フィールドのチェック
-            const requiredFields = [
-                { id: 'name', name: '氏名', type: 'select' },
-                { id: 'date', name: '日付', type: 'input' },
-                { id: 'kubun', name: '稼働区分', type: 'select' },
-                { id: 'workplace', name: '稼働先', type: 'input' },
-                { id: 'startTime', name: '開始時刻', type: 'input' },
-                { id: 'endTime', name: '終了時刻', type: 'input' },
-                { id: 'breakTime', name: '休憩時間', type: 'select' },
-                { id: 'content', name: '業務内容', type: 'textarea' },
-                { id: 'impression', name: '所感', type: 'textarea' }
-            ];
-
-            requiredFields.forEach(field => {
-                const element = document.getElementById(field.id);
-                const value = element.value.trim();
-
-                if (!value) {
-                    isValid = false;
-                    errors.push(field.name);
-                    element.classList.add('field-error');
-                    const errorText = document.getElementById('error-' + field.id);
-                    if (errorText) {
-                        errorText.style.display = 'block';
-                    }
-                }
-            });
-
-            // 時刻の妥当性チェック
-            const startTime = document.getElementById('startTime').value;
-            const endTime = document.getElementById('endTime').value;
-            if (startTime && endTime && startTime >= endTime) {
-                isValid = false;
-                errors.push('時刻設定が不正です（開始時刻が終了時刻より後になっています）');
-                document.getElementById('startTime').classList.add('field-error');
-                document.getElementById('endTime').classList.add('field-error');
-            }
-
-            // 半角数値チェック
-            const transportCost = document.getElementById('transportCost').value.trim();
-            if (transportCost) {
-                // 半角数字のみかチェック（正規表現）
-                if (!/^\d+$/.test(transportCost)) {
-                    isValid = false;
-                    errors.push('交通費は半角数字で入力してください');
-                    document.getElementById('transportCost').classList.add('field-error');
-                    const errorText = document.getElementById('error-transportCost');
-                    if (errorText) {
-                        errorText.style.display = 'block';
-                    }
-                }
-            }
-
-            // エラーメッセージ表示
-            if (!isValid) {
-                const errorMessage = document.getElementById('errorMessage');
-                errorMessage.textContent = '入力内容に不備があります。以下の項目を確認してください:\n' + errors.join('、');
-                errorMessage.style.display = 'block';
-                
-                // エラーメッセージまでスクロール
-                errorMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-
-            return isValid;
-        }
-
         // 本社稼働・その他の直接送信
         async function submitWorkData(workData) {
-            document.getElementById('loading').style.display = 'block';
-
             try {
                 await fetch(SCRIPT_URL, {
                     method: 'POST',
@@ -531,7 +517,6 @@
                 sessionStorage.removeItem('workData');
                 window.location.href = 'index.html';
             } catch (error) {
-                document.getElementById('loading').style.display = 'none';
                 alert('送信エラー: ' + error.message);
             }
         }
