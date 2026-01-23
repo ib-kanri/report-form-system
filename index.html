@@ -245,14 +245,9 @@
 
             try {
                 // 認証API呼び出し
-                const response = await fetch(SCRIPT_URL + '?action=authenticate', {
-                    method: 'POST',
-                    mode: 'cors',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        employeeId: employeeId,
-                        password: password
-                    })
+                const response = await fetch(SCRIPT_URL + '?action=authenticate&employeeId=' + encodeURIComponent(employeeId) + '&password=' + encodeURIComponent(password), {
+                    method: 'GET',
+                    mode: 'cors'
                 });
 
                 const data = await response.json();
@@ -267,7 +262,7 @@
                     
                     showMenu();
                 } else {
-                    showError('社員IDまたはパスワードが正しくありません');
+                    showError(data.message || '社員IDまたはパスワードが正しくありません');
                     document.getElementById('password').value = '';
                 }
             } catch (error) {
