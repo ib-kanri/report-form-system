@@ -3,311 +3,392 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>報告フォーム - ログイン</title>
+    <title>ログイン - INTER BLUE報告システム</title>
     <style>
+        :root {
+            --primary: #1a73e8;
+            --primary-light: #4285f4;
+            --primary-dark: #1557b0;
+            --success: #34a853;
+            --error: #ea4335;
+            --gray-50: #f8f9fa;
+            --gray-100: #f1f3f4;
+            --gray-200: #e8eaed;
+            --gray-300: #dadce0;
+            --gray-700: #5f6368;
+            --gray-800: #3c4043;
+            --gray-900: #202124;
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #4facfe 100%);
-            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            color: var(--gray-900);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             display: flex;
             align-items: center;
             justify-content: center;
+            min-height: 100vh;
             padding: 20px;
+            position: relative;
+            overflow: hidden;
         }
 
-        .container {
+        body::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 50%, rgba(255,255,255,0.1) 0%, transparent 50%);
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 420px;
             background: white;
             border-radius: 16px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            width: 100%;
-            max-width: 400px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            animation: fadeIn 0.5s ease-out;
+            position: relative;
+            z-index: 1;
         }
 
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #4facfe 100%);
-            color: white;
-            padding: 32px 24px;
+        .login-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            padding: 40px 32px 32px;
             text-align: center;
-            border-radius: 16px 16px 0 0;
+            position: relative;
+            overflow: hidden;
         }
 
-        .header h1 {
-            font-size: 24px;
+        .login-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        }
+
+        .logo {
+            width: 64px;
+            height: 64px;
+            background: white;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--primary);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            position: relative;
+        }
+
+        .company-name {
+            font-size: 16px;
             font-weight: 600;
-            line-height: 1.3;
+            letter-spacing: 1px;
+            color: rgba(255, 255, 255, 0.95);
+            margin-bottom: 4px;
+            position: relative;
         }
 
-        .content {
-            padding: 32px 24px;
+        .system-name {
+            font-size: 22px;
+            font-weight: 700;
+            color: white;
+            margin: 0;
+            position: relative;
+        }
+
+        .login-body {
+            padding: 32px;
+        }
+
+        .welcome-text {
+            font-size: 14px;
+            color: var(--gray-700);
+            text-align: center;
+            margin-bottom: 24px;
         }
 
         .form-group {
             margin-bottom: 20px;
+            animation: slideIn 0.5s ease-out backwards;
         }
+
+        .form-group:nth-child(2) { animation-delay: 0.1s; }
+        .form-group:nth-child(3) { animation-delay: 0.2s; }
 
         label {
             display: block;
             font-size: 14px;
-            font-weight: 500;
+            font-weight: 600;
+            color: var(--gray-800);
             margin-bottom: 8px;
-            color: #333;
         }
 
-        input[type="text"],
-        input[type="password"] {
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray-700);
+            font-size: 18px;
+            pointer-events: none;
+            transition: color 0.2s;
+        }
+
+        input {
             width: 100%;
-            padding: 14px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: border-color 0.3s;
+            height: 52px;
+            padding: 0 16px 0 48px;
+            font-size: 15px;
+            border: 2px solid var(--gray-200);
+            border-radius: 12px;
+            background: white;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: inherit;
         }
 
         input:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(26, 115, 232, 0.1);
         }
 
-        .btn {
+        input:focus + .input-icon {
+            color: var(--primary);
+        }
+
+        .btn-login {
             width: 100%;
-            padding: 16px;
-            background: linear-gradient(135deg, #667eea 0%, #4facfe 100%);
-            color: white;
-            border: none;
-            border-radius: 8px;
+            height: 52px;
             font-size: 16px;
             font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-        }
-
-        .error {
-            background: #fee;
-            color: #c33;
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 14px;
-            margin-bottom: 16px;
-            display: none;
-        }
-
-        .menu {
-            display: none;
-        }
-
-        .menu.active {
-            display: block;
-        }
-
-        .user-info {
-            background: #f8f9fa;
-            padding: 16px;
-            border-radius: 8px;
-            margin-bottom: 24px;
-            text-align: center;
-        }
-
-        .user-info .id {
-            font-size: 12px;
-            color: #666;
-            margin-bottom: 4px;
-        }
-
-        .user-info .name {
-            font-weight: 600;
-            font-size: 18px;
-            color: #333;
-        }
-
-        .menu-item {
-            display: block;
-            padding: 18px 24px;
-            background: #f8f9fa;
-            margin-bottom: 12px;
-            border-radius: 8px;
-            text-decoration: none;
-            color: #333;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
-        }
-
-        .menu-item:focus {
-            outline: none;
-            background: #f8f9fa;
-            color: #333;
-        }
-
-        .menu-item:hover {
-            background: linear-gradient(135deg, #667eea 0%, #4facfe 100%);
             color: white;
-            border-color: transparent;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            margin-top: 8px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 12px rgba(26, 115, 232, 0.3);
+            position: relative;
+            overflow: hidden;
+            animation: slideIn 0.5s ease-out 0.3s backwards;
         }
 
-        .menu-item:active {
+        .btn-login::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn-login:hover::before {
+            left: 100%;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(26, 115, 232, 0.4);
+        }
+
+        .btn-login:active {
             transform: translateY(0);
         }
 
-        .logout-btn {
-            width: 100%;
-            padding: 16px;
-            margin-top: 24px;
-            background: #e0e0e0;
-            color: #666;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
+        .btn-login:disabled {
+            background: var(--gray-300);
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
         }
 
-        .logout-btn:hover {
-            background: #d0d0d0;
-            color: #333;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        .message {
+            padding: 14px 16px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: none;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .message.error {
+            background: rgba(234, 67, 53, 0.1);
+            border: 1px solid rgba(234, 67, 53, 0.3);
+            color: var(--error);
+        }
+
+        .login-footer {
+            padding: 20px 32px;
+            background: var(--gray-50);
+            text-align: center;
+            font-size: 13px;
+            color: var(--gray-700);
+            border-top: 1px solid var(--gray-200);
+        }
+
+        @media (max-width: 480px) {
+            .login-container {
+                max-width: 100%;
+                border-radius: 12px;
+            }
+            .login-header {
+                padding: 32px 24px 24px;
+            }
+            .login-body {
+                padding: 24px;
+            }
+            .system-name {
+                font-size: 20px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>INTER BLUE株式会社<br>報告フォームシステム</h1>
+    <div class="login-container">
+        <div class="login-header">
+            <div class="logo">IB</div>
+            <div class="company-name">INTER BLUE株式会社</div>
+            <h1 class="system-name">報告システム</h1>
         </div>
 
-        <div class="content">
-            <div id="loginForm">
-                <div class="error" id="errorMsg"></div>
+        <div class="login-body">
+            <p class="welcome-text">社員IDとパスワードを入力してください</p>
+
+            <div id="message" class="message"></div>
+
+            <form id="loginForm">
                 <div class="form-group">
                     <label for="employeeId">社員ID</label>
-                    <input type="text" id="employeeId" placeholder="例: EMP001" autofocus>
+                    <div class="input-wrapper">
+                        <input type="text" id="employeeId" name="employeeId" required autocomplete="username" placeholder="E001">
+                        <span class="input-icon">👤</span>
+                    </div>
                 </div>
+
                 <div class="form-group">
                     <label for="password">パスワード</label>
-                    <input type="password" id="password" placeholder="4桁の数字">
+                    <div class="input-wrapper">
+                        <input type="password" id="password" name="password" required autocomplete="current-password" placeholder="••••••••">
+                        <span class="input-icon">🔒</span>
+                    </div>
                 </div>
-                <button class="btn" onclick="login()">ログイン</button>
-            </div>
 
-            <div class="menu" id="menu">
-                <div class="user-info" id="userInfo"></div>
-                <a href="work.html" class="menu-item">業務報告</a>
-                <a href="meeting.html" class="menu-item">ミーティング報告</a>
-                <a href="training.html" class="menu-item">研修報告</a>
-                <button class="logout-btn" onclick="logout()">ログアウト</button>
-            </div>
+                <button type="submit" class="btn-login" id="loginBtn">ログイン</button>
+            </form>
+        </div>
+
+        <div class="login-footer">
+            © 2026 INTER BLUE株式会社
         </div>
     </div>
 
     <script>
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz8ek1mpv7jemHJgdyP5BUysHeLaigtkicDvx7cAhv5J9It8zgMGjpTH2xMmuTxkrSbHA/exec';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx8XJGE_QgHdN7LTqm3MJUvqw6X7lS3b93WTygsOg5lni-WEOLoqrX13_moNyRYzWcf5w/exec';
 
-        window.onload = function() {
-            if (sessionStorage.getItem('authenticated') === 'true') {
-                showMenu();
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const loginBtn = document.getElementById('loginBtn');
+            const messageDiv = document.getElementById('message');
+            const employeeId = document.getElementById('employeeId').value;
+            const password = document.getElementById('password').value;
+
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'ログイン中...';
+            messageDiv.style.display = 'none';
+
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'authenticate',
+                        employeeId: employeeId,
+                        password: password
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    sessionStorage.setItem('employeeId', result.data.employeeId);
+                    sessionStorage.setItem('employeeName', result.data.employeeName);
+                    sessionStorage.setItem('department', result.data.department);
+                    sessionStorage.setItem('team', result.data.team);
+                    sessionStorage.setItem('defaultKubun', result.data.defaultKubun || '');
+                    sessionStorage.setItem('defaultWorkplace', result.data.defaultWorkplace || '');
+
+                    loginBtn.textContent = 'ログイン成功！';
+                    setTimeout(() => {
+                        window.location.href = 'menu.html';
+                    }, 500);
+                } else {
+                    messageDiv.className = 'message error';
+                    messageDiv.textContent = result.message || 'ログインに失敗しました';
+                    messageDiv.style.display = 'block';
+                }
+            } catch (error) {
+                messageDiv.className = 'message error';
+                messageDiv.textContent = 'エラー: ' + error.message;
+                messageDiv.style.display = 'block';
+            } finally {
+                if (loginBtn.textContent === 'ログイン中...') {
+                    loginBtn.disabled = false;
+                    loginBtn.textContent = 'ログイン';
+                }
             }
-        };
+        });
 
-        // Enterキーでログイン
         document.getElementById('employeeId').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
+                e.preventDefault();
                 document.getElementById('password').focus();
             }
         });
-
-        document.getElementById('password').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') login();
-        });
-
-        async function login() {
-            const employeeId = document.getElementById('employeeId').value.trim();
-            const password = document.getElementById('password').value.trim();
-            const errorMsg = document.getElementById('errorMsg');
-
-            if (!employeeId || !password) {
-                showError('社員IDとパスワードを入力してください');
-                return;
-            }
-
-            try {
-                // 認証API呼び出し
-                const response = await fetch(SCRIPT_URL + '?action=authenticate&employeeId=' + encodeURIComponent(employeeId) + '&password=' + encodeURIComponent(password), {
-                    method: 'GET',
-                    mode: 'cors'
-                });
-
-                const data = await response.json();
-
-                if (data.success) {
-                    // ログイン成功
-                    sessionStorage.setItem('authenticated', 'true');
-                    sessionStorage.setItem('employeeId', data.employeeId);
-                    sessionStorage.setItem('employeeName', data.employeeName);
-                    sessionStorage.setItem('department', data.department);
-                    sessionStorage.setItem('team', data.team);
-                    
-                    showMenu();
-                } else {
-                    showError(data.message || '社員IDまたはパスワードが正しくありません');
-                    document.getElementById('password').value = '';
-                }
-            } catch (error) {
-                console.error('認証エラー:', error);
-                showError('認証処理でエラーが発生しました');
-            }
-        }
-
-        function showError(message) {
-            const errorMsg = document.getElementById('errorMsg');
-            errorMsg.textContent = message;
-            errorMsg.style.display = 'block';
-            setTimeout(() => errorMsg.style.display = 'none', 5000);
-        }
-
-        function showMenu() {
-            document.getElementById('loginForm').style.display = 'none';
-            document.getElementById('menu').classList.add('active');
-            
-            // ユーザー情報を表示
-            const userInfo = document.getElementById('userInfo');
-            const employeeId = sessionStorage.getItem('employeeId');
-            const employeeName = sessionStorage.getItem('employeeName');
-            
-            userInfo.innerHTML = `
-                <div class="id">${employeeId}</div>
-                <div class="name">${employeeName}</div>
-            `;
-            
-            // メニューアイテムのフォーカスを削除
-            document.querySelectorAll('.menu-item').forEach(item => {
-                item.addEventListener('click', function() {
-                    this.blur();
-                });
-                item.blur();
-            });
-        }
-
-        function logout() {
-            sessionStorage.clear();
-            document.getElementById('loginForm').style.display = 'block';
-            document.getElementById('menu').classList.remove('active');
-            document.getElementById('employeeId').value = '';
-            document.getElementById('password').value = '';
-        }
     </script>
 </body>
 </html>
