@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>シフト提出</title>
+    <style>
+        :root {
+            --primary: #1a73e8;
+            --primary-dark: #1557b0;
+            --success: #34a853;
+            --error: #ea4335;
+            --gray-50: #f8f9fa;
+            --gray-100: #f1f3f4;
+            --gray-300: #dadce0;
+            --gray-700: #5f6368;
+            --gray-900: #202124;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            color: var(--gray-900);
+            background: var(--gray-50);
+        }
+
+        .header {
+            background: var(--primary);
+            color: white;
+            padding: 16px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header h1 {
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 16px;
+            background: white;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding: 12px;
+            background: var(--gray-50);
+            border-radius: 4px;
+        }
+
+        .month-selector {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .month-selector button {
+            background: white;
+            border: 1px solid var(--gray-300);
+            border-radius: 4px;
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .month-selector button:hover {
+            background: var(--gray-100);
+        }
+
+        .current-month {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .calendar {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+
+        .calendar-day-header {
+            text-align: center;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--gray-700);
+            padding: 8px;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            border: 1px solid var(--gray-300);
+            border-radius: 4px;
+            padding: 8px;
+            cursor: pointer;
+            position: relative;
+            background: white;
+            transition: all 0.2s;
+        }
+
+        .calendar-day:hover {
+            border-color: var(--primary);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .calendar-day.other-month {
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        .calendar-day.today {
+            border-color: var(--primary);
+            background: rgba(26, 115, 232, 0.05);
+        }
+
+        .calendar-day.has-shift {
+            background: rgba(52, 168, 83, 0.1);
+            border-color: var(--success);
+        }
+
+        .day-number {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .shift-info {
+            font-size: 11px;
+            margin-top: 4px;
+            color: var(--gray-700);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--gray-700);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--gray-900);
+            margin-bottom: 8px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            height: 48px;
+            padding: 12px 16px;
+            font-size: 16px;
+            border: 1px solid var(--gray-300);
+            border-radius: 4px;
+            background: white;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.1);
+        }
+
+        .time-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .btn {
+            flex: 1;
+            height: 48px;
+            font-size: 16px;
+            font-weight: 500;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-delete {
+            background: var(--error);
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #d93025;
+        }
+
+        .btn-cancel {
+            background: var(--gray-100);
+            color: var(--gray-900);
+        }
+
+        .btn-cancel:hover {
+            background: var(--gray-300);
+        }
+
+        .btn-submit-all {
+            width: 100%;
+            height: 56px;
+            font-size: 18px;
+            font-weight: 600;
+            background: var(--success);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 24px;
+        }
+
+        .btn-submit-all:hover {
+            background: #2d8e43;
+        }
+
+        .message {
+            padding: 16px;
+            border-radius: 4px;
+            margin-bottom: 16px;
+            display: none;
+        }
+
+        .message.success {
+            background: rgba(52, 168, 83, 0.1);
+            border: 1px solid var(--success);
+            color: var(--success);
+        }
+
+        .message.error {
+            background: rgba(234, 67, 53, 0.1);
+            border: 1px solid var(--error);
+            color: var(--error);
+        }
+
+        @media (max-width: 768px) {
+            .calendar {
+                gap: 4px;
+            }
+
+            .calendar-day {
+                padding: 4px;
+            }
+
+            .day-number {
+                font-size: 12px;
+            }
+
+            .shift-info {
+                font-size: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>シフト提出</h1>
+    </div>
+
+    <div class="container">
+        <div id="message" class="message"></div>
+
+        <div class="calendar-header">
+            <div class="month-selector">
+                <button onclick="previousMonth()">◀</button>
+                <span class="current-month" id="currentMonth"></span>
+                <button onclick="nextMonth()">▶</button>
+            </div>
+        </div>
+
+        <div class="calendar" id="calendar"></div>
+
+        <button class="btn-submit-all" onclick="submitAllShifts()">シフトを提出</button>
+    </div>
+
+    <!-- モーダル -->
+    <div class="modal" id="shiftModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalTitle"></h2>
+                <button class="close-btn" onclick="closeModal()">×</button>
+            </div>
+
+            <form id="shiftForm">
+                <input type="hidden" id="shiftDate">
+
+                <div class="form-group">
+                    <label for="shiftType">勤務種別</label>
+                    <select id="shiftType" name="shiftType" required>
+                        <option value="">選択してください</option>
+                        <option value="通常勤務">通常勤務</option>
+                        <option value="午前のみ">午前のみ</option>
+                        <option value="午後のみ">午後のみ</option>
+                        <option value="休日">休日</option>
+                        <option value="有給">有給</option>
+                    </select>
+                </div>
+
+                <div class="time-group">
+                    <div class="form-group">
+                        <label for="startTime">開始時刻</label>
+                        <input type="time" id="startTime" name="startTime">
+                    </div>
+                    <div class="form-group">
+                        <label for="endTime">終了時刻</label>
+                        <input type="time" id="endTime" name="endTime">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="workplace">予定稼働先</label>
+                    <input type="text" id="workplace" name="workplace" placeholder="稼働先を入力">
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-cancel" onclick="closeModal()">キャンセル</button>
+                    <button type="button" class="btn btn-delete" onclick="deleteShift()" id="deleteBtn" style="display:none;">削除</button>
+                    <button type="submit" class="btn btn-primary">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let currentYear, currentMonth;
+        let shifts = {}; // { 'YYYY-MM-DD': { shiftType, startTime, endTime, workplace } }
+        let employeeId, employeeName;
+
+        // 初期化
+        function init() {
+            employeeId = sessionStorage.getItem('employeeId');
+            employeeName = sessionStorage.getItem('employeeName');
+
+            if (!employeeId) {
+                alert('ログイン情報が見つかりません。');
+                window.location.href = 'index.html';
+                return;
+            }
+
+            const today = new Date();
+            currentYear = today.getFullYear();
+            currentMonth = today.getMonth();
+
+            renderCalendar();
+            loadShifts();
+        }
+
+        // カレンダー描画
+        function renderCalendar() {
+            const calendar = document.getElementById('calendar');
+            const monthDisplay = document.getElementById('currentMonth');
+
+            monthDisplay.textContent = `${currentYear}年 ${currentMonth + 1}月`;
+
+            // 曜日ヘッダー
+            const weekdays = ['日', '月', '火', '水', '木', '金', '土'];
+            let html = weekdays.map(day => `<div class="calendar-day-header">${day}</div>`).join('');
+
+            // 月の最初の日と最後の日
+            const firstDay = new Date(currentYear, currentMonth, 1);
+            const lastDay = new Date(currentYear, currentMonth + 1, 0);
+            const firstDayOfWeek = firstDay.getDay();
+            const lastDate = lastDay.getDate();
+
+            // 前月の日を埋める
+            const prevMonthLastDay = new Date(currentYear, currentMonth, 0).getDate();
+            for (let i = firstDayOfWeek - 1; i >= 0; i--) {
+                html += `<div class="calendar-day other-month"><div class="day-number">${prevMonthLastDay - i}</div></div>`;
+            }
+
+            // 当月の日
+            const today = new Date();
+            const isCurrentMonth = currentYear === today.getFullYear() && currentMonth === today.getMonth();
+
+            for (let day = 1; day <= lastDate; day++) {
+                const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const isToday = isCurrentMonth && day === today.getDate();
+                const shift = shifts[dateStr];
+                const hasShift = !!shift;
+
+                let classes = 'calendar-day';
+                if (isToday) classes += ' today';
+                if (hasShift) classes += ' has-shift';
+
+                let shiftInfo = '';
+                if (shift) {
+                    shiftInfo = `<div class="shift-info">${shift.shiftType}<br>${shift.startTime || ''}</div>`;
+                }
+
+                html += `
+                    <div class="${classes}" onclick="openModal('${dateStr}')">
+                        <div class="day-number">${day}</div>
+                        ${shiftInfo}
+                    </div>
+                `;
+            }
+
+            calendar.innerHTML = html;
+        }
+
+        // モーダル開く
+        function openModal(dateStr) {
+            const modal = document.getElementById('shiftModal');
+            const form = document.getElementById('shiftForm');
+            const deleteBtn = document.getElementById('deleteBtn');
+
+            // 日付を表示
+            const date = new Date(dateStr);
+            document.getElementById('modalTitle').textContent = `${date.getMonth() + 1}月${date.getDate()}日のシフト`;
+            document.getElementById('shiftDate').value = dateStr;
+
+            // 既存のシフトがあれば表示
+            const shift = shifts[dateStr];
+            if (shift) {
+                document.getElementById('shiftType').value = shift.shiftType;
+                document.getElementById('startTime').value = shift.startTime || '';
+                document.getElementById('endTime').value = shift.endTime || '';
+                document.getElementById('workplace').value = shift.workplace || '';
+                deleteBtn.style.display = 'block';
+            } else {
+                form.reset();
+                deleteBtn.style.display = 'none';
+            }
+
+            modal.classList.add('active');
+        }
+
+        // モーダル閉じる
+        function closeModal() {
+            document.getElementById('shiftModal').classList.remove('active');
+        }
+
+        // シフト保存
+        document.getElementById('shiftForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const dateStr = document.getElementById('shiftDate').value;
+            const shiftType = document.getElementById('shiftType').value;
+            const startTime = document.getElementById('startTime').value;
+            const endTime = document.getElementById('endTime').value;
+            const workplace = document.getElementById('workplace').value;
+
+            shifts[dateStr] = {
+                shiftType,
+                startTime,
+                endTime,
+                workplace
+            };
+
+            closeModal();
+            renderCalendar();
+            showMessage('シフトを保存しました', 'success');
+        });
+
+        // シフト削除
+        function deleteShift() {
+            const dateStr = document.getElementById('shiftDate').value;
+            delete shifts[dateStr];
+            closeModal();
+            renderCalendar();
+            showMessage('シフトを削除しました', 'success');
+        }
+
+        // 前月
+        function previousMonth() {
+            currentMonth--;
+            if (currentMonth < 0) {
+                currentMonth = 11;
+                currentYear--;
+            }
+            renderCalendar();
+        }
+
+        // 次月
+        function nextMonth() {
+            currentMonth++;
+            if (currentMonth > 11) {
+                currentMonth = 0;
+                currentYear++;
+            }
+            renderCalendar();
+        }
+
+        // シフト一括提出
+        async function submitAllShifts() {
+            if (Object.keys(shifts).length === 0) {
+                alert('提出するシフトがありません');
+                return;
+            }
+
+            if (!confirm('シフトを提出しますか？')) {
+                return;
+            }
+
+            try {
+                const response = await fetch('https://script.google.com/macros/s/AKfycbx8XJGE_QgHdN7LTqm3MJUvqw6X7lS3b93WTygsOg5lni-WEOLoqrX13_moNyRYzWcf5w/exec', {
+                    method: 'POST',
+                    mode: 'cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'submitShifts',
+                        employeeId: employeeId,
+                        employeeName: employeeName,
+                        yearMonth: `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`,
+                        shifts: shifts
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showMessage('シフトを提出しました', 'success');
+                    setTimeout(() => {
+                        window.location.href = 'menu.html';
+                    }, 1500);
+                } else {
+                    throw new Error(result.message);
+                }
+            } catch (error) {
+                showMessage('エラー: ' + error.message, 'error');
+            }
+        }
+
+        // シフト読み込み（保存済みのシフトを取得）
+        async function loadShifts() {
+            // 実装予定: Google Apps Scriptからシフトデータを取得
+        }
+
+        // メッセージ表示
+        function showMessage(text, type) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.textContent = text;
+            messageDiv.className = 'message ' + type;
+            messageDiv.style.display = 'block';
+            setTimeout(() => {
+                messageDiv.style.display = 'none';
+            }, 3000);
+        }
+
+        // 初期化実行
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

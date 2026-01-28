@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>メニュー - 報告システム</title>
+    <style>
+        :root {
+            --primary: #1a73e8;
+            --primary-dark: #1557b0;
+            --success: #34a853;
+            --warning: #fbbc04;
+            --error: #ea4335;
+            --gray-50: #f8f9fa;
+            --gray-100: #f1f3f4;
+            --gray-200: #e8eaed;
+            --gray-700: #5f6368;
+            --gray-800: #3c4043;
+            --gray-900: #202124;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            color: var(--gray-900);
+            background: var(--gray-50);
+            min-height: 100vh;
+        }
+
+        .header {
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logo-small {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 700;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--gray-900);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-badge {
+            background: var(--gray-100);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--gray-800);
+        }
+
+        .logout-btn {
+            background: white;
+            border: 2px solid var(--gray-200);
+            color: var(--gray-800);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .logout-btn:hover {
+            border-color: var(--error);
+            color: var(--error);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 32px 24px;
+        }
+
+        .section-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--gray-700);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin: 32px 0 16px 0;
+        }
+
+        .section-title:first-child {
+            margin-top: 0;
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .menu-card {
+            background: white;
+            border: 2px solid var(--gray-200);
+            border-radius: 16px;
+            padding: 28px 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+            color: var(--gray-900);
+            position: relative;
+            overflow: hidden;
+            animation: fadeInUp 0.5s ease-out backwards;
+        }
+
+        .menu-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gray-200);
+            transition: background 0.3s;
+        }
+
+        .menu-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.1);
+        }
+
+        .menu-card:hover::before {
+            background: linear-gradient(90deg, var(--primary), var(--primary-dark));
+        }
+
+        .menu-card.primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        .menu-card.primary::before {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .menu-card.primary:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 12px 32px rgba(26, 115, 232, 0.3);
+        }
+
+        .menu-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            display: block;
+        }
+
+        .menu-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .menu-desc {
+            font-size: 13px;
+            opacity: 0.8;
+        }
+
+        .menu-card.primary .menu-desc {
+            opacity: 0.9;
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                padding: 12px 16px;
+            }
+
+            .header h1 {
+                font-size: 18px;
+            }
+
+            .user-badge {
+                display: none;
+            }
+
+            .container {
+                padding: 24px 16px;
+            }
+
+            .menu-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 16px;
+            }
+
+            .menu-card {
+                padding: 20px 16px;
+            }
+
+            .menu-icon {
+                font-size: 36px;
+                margin-bottom: 12px;
+            }
+
+            .menu-title {
+                font-size: 16px;
+            }
+
+            .menu-desc {
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="header-left">
+                <div class="logo-small">IB</div>
+                <h1>報告システム</h1>
+            </div>
+            <div class="user-info">
+                <div class="user-badge" id="userInfo"></div>
+                <button class="logout-btn" onclick="logout()">ログアウト</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="section-title">日次報告</div>
+        <div class="menu-grid">
+            <a href="work.html" class="menu-card primary" style="animation-delay: 0.1s">
+                <div class="menu-icon">📝</div>
+                <div class="menu-title">業務報告</div>
+                <div class="menu-desc">本日の業務を報告</div>
+            </a>
+            <a href="performance.html" class="menu-card" style="animation-delay: 0.15s">
+                <div class="menu-icon">📊</div>
+                <div class="menu-title">実績入力</div>
+                <div class="menu-desc">業務実績を登録</div>
+            </a>
+        </div>
+
+        <div class="section-title">その他報告</div>
+        <div class="menu-grid">
+            <a href="meeting.html" class="menu-card" style="animation-delay: 0.2s">
+                <div class="menu-icon">👥</div>
+                <div class="menu-title">ミーティング</div>
+                <div class="menu-desc">会議内容を記録</div>
+            </a>
+            <a href="training.html" class="menu-card" style="animation-delay: 0.25s">
+                <div class="menu-icon">📚</div>
+                <div class="menu-title">研修報告</div>
+                <div class="menu-desc">研修の学びを共有</div>
+            </a>
+        </div>
+
+        <div class="section-title">予定・実績管理</div>
+        <div class="menu-grid">
+            <a href="shift.html" class="menu-card" style="animation-delay: 0.3s">
+                <div class="menu-icon">📅</div>
+                <div class="menu-title">シフト提出</div>
+                <div class="menu-desc">来月のシフトを登録</div>
+            </a>
+            <a href="mystats.html" class="menu-card" style="animation-delay: 0.35s">
+                <div class="menu-icon">📈</div>
+                <div class="menu-title">自分の実績</div>
+                <div class="menu-desc">過去の成果を確認</div>
+            </a>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const employeeName = sessionStorage.getItem('employeeName');
+            const department = sessionStorage.getItem('department');
+            
+            if (!employeeName) {
+                window.location.href = 'index.html';
+                return;
+            }
+            
+            document.getElementById('userInfo').textContent = `${employeeName} (${department})`;
+        });
+
+        function logout() {
+            if (confirm('ログアウトしますか？')) {
+                sessionStorage.clear();
+                window.location.href = 'index.html';
+            }
+        }
+    </script>
+</body>
+</html>
