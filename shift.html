@@ -33,7 +33,7 @@
             z-index: 100;
         }
         .header-content {
-            max-width: 1000px;
+            max-width: 1200px;
             margin: 0 auto;
             padding: 16px;
             display: flex;
@@ -43,7 +43,7 @@
         .header-title h1 { font-size: 18px; font-weight: 500; }
         .user-info { font-size: 14px; color: var(--gray-700); }
         .container {
-            max-width: 1000px;
+            max-width: 1200px;
             margin: 0 auto;
             padding: 24px 16px 80px;
         }
@@ -77,16 +77,6 @@
             font-size: 14px;
             margin-bottom: 16px;
         }
-        .warning-box {
-            background: #fff3cd;
-            color: #856404;
-            padding: 12px 16px;
-            border-radius: 8px;
-            font-size: 14px;
-            margin-bottom: 16px;
-            display: none;
-        }
-        .warning-box.show { display: block; }
         .stats-box {
             background: white;
             border-radius: 8px;
@@ -139,7 +129,7 @@
         .calendar-table {
             width: 100%;
             border-collapse: collapse;
-            min-width: 800px;
+            min-width: 1000px;
         }
         .calendar-table th {
             background: var(--gray-100);
@@ -158,7 +148,8 @@
         .date-cell.sunday { color: var(--error); }
         .date-cell.saturday { color: var(--primary); }
         .calendar-table select,
-        .calendar-table input {
+        .calendar-table input[type="time"],
+        .calendar-table input[type="number"] {
             width: 100%;
             height: 40px;
             padding: 8px;
@@ -166,10 +157,32 @@
             border: 1px solid var(--gray-200);
             border-radius: 4px;
         }
-        .calendar-table input.error {
+        .calendar-table input[type="text"] {
+            width: 100%;
+            height: 40px;
+            padding: 8px;
+            font-size: 14px;
+            border: 1px solid var(--gray-200);
+            border-radius: 4px;
+        }
+        .calendar-table input[type="text"]:disabled {
+            background: var(--gray-50);
+            color: var(--gray-700);
+        }
+        .calendar-table input[type="text"].error {
             border-color: var(--error);
             border-width: 2px;
             background: #fff5f5;
+        }
+        .calendar-table input[type="number"].error {
+            border-color: var(--error);
+            border-width: 2px;
+            background: #fff5f5;
+        }
+        .calendar-table input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
         }
         .copy-tools {
             background: white;
@@ -192,36 +205,6 @@
             font-size: 14px;
             border: 1px solid var(--gray-200);
             border-radius: 4px;
-        }
-        .change-reason-section {
-            background: white;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 16px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            display: none;
-        }
-        .change-reason-section.show { display: block; }
-        .change-reason-section label {
-            display: block;
-            font-size: 14px;
-            font-weight: 500;
-            margin-bottom: 8px;
-        }
-        .change-reason-section textarea {
-            width: 100%;
-            min-height: 80px;
-            padding: 12px;
-            font-size: 14px;
-            border: 1px solid var(--gray-200);
-            border-radius: 4px;
-            font-family: inherit;
-            resize: vertical;
-        }
-        .change-reason-section textarea.error {
-            border-color: var(--error);
-            border-width: 2px;
-            background: #fff5f5;
         }
         .btn {
             height: 48px;
@@ -285,11 +268,7 @@
         </div>
 
         <div class="info-box">
-            一度提出した後でも、いつでも修正できます。変更があった日付のみが更新されます。
-        </div>
-
-        <div id="warningBox" class="warning-box">
-            <strong>変更があります：</strong><span id="changedDaysText"></span>
+            変更がある日付は「変更」にチェックを入れ、変更理由を入力してください。
         </div>
 
         <div class="stats-box">
@@ -328,21 +307,17 @@
                 <table class="calendar-table">
                     <thead>
                         <tr>
-                            <th>日付</th>
-                            <th>勤務区分</th>
-                            <th>開始時刻</th>
-                            <th>終了時刻</th>
-                            <th>休憩時間(分)</th>
+                            <th style="width: 100px;">日付</th>
+                            <th style="width: 60px;">変更</th>
+                            <th style="width: 120px;">勤務区分</th>
+                            <th style="width: 100px;">開始時刻</th>
+                            <th style="width: 100px;">終了時刻</th>
+                            <th style="width: 100px;">休憩時間(分)</th>
+                            <th style="min-width: 200px;">変更理由</th>
                         </tr>
                     </thead>
                     <tbody id="calendarBody"></tbody>
                 </table>
-            </div>
-
-            <div id="changeReasonSection" class="change-reason-section">
-                <label for="changeReason">変更理由<span style="color: var(--error); margin-left: 4px;">*</span></label>
-                <textarea id="changeReason" placeholder="シフトを変更する理由を入力してください"></textarea>
-                <div class="error-text" style="color: var(--error); font-size: 13px; margin-top: 4px; display: none;" id="changeReason-error">変更理由を入力してください</div>
             </div>
 
             <div class="button-group">
@@ -371,7 +346,6 @@
         document.getElementById('targetMonth').value = defaultYearMonth;
 
         let currentYearMonth = defaultYearMonth;
-        let originalData = {};
         generateCalendar(defaultYearMonth);
 
         document.getElementById('loadBtn').addEventListener('click', () => {
@@ -393,7 +367,8 @@
             const copySourceSelect = document.getElementById('copySourceDate');
             copySourceSelect.innerHTML = '<option value="">コピー元の日を選択</option>';
 
-            originalData = {};
+            // 既存データ取得
+            let existingData = {};
             try {
                 const response = await fetch(SCRIPT_URL, {
                     method: 'POST',
@@ -407,7 +382,7 @@
                 const result = await response.json();
                 if (result.success && result.data) {
                     result.data.forEach(shift => {
-                        originalData[shift.date] = shift;
+                        existingData[shift.date] = shift;
                     });
                 }
             } catch (error) {
@@ -421,19 +396,23 @@
                 const isSunday = date.getDay() === 0;
                 const isSaturday = date.getDay() === 6;
 
-                const existingShift = originalData[dateStr];
+                const existingShift = existingData[dateStr];
                 const workType = existingShift ? existingShift.workType : (isSunday ? '公休' : '出勤');
                 const startTime = existingShift ? existingShift.startTime : (isSunday ? '' : '10:00');
                 const endTime = existingShift ? existingShift.endTime : (isSunday ? '' : '19:00');
                 const breakTime = existingShift ? existingShift.breakTime : (isSunday ? '' : '60');
 
                 const tr = document.createElement('tr');
+                tr.dataset.date = dateStr;
                 tr.innerHTML = `
                     <td class="date-cell ${isSunday ? 'sunday' : ''} ${isSaturday ? 'saturday' : ''}">
                         ${month}/${day}(${dayOfWeek})
                     </td>
+                    <td style="text-align: center;">
+                        <input type="checkbox" name="changeFlag_${dateStr}">
+                    </td>
                     <td>
-                        <select name="workType_${dateStr}" data-date="${dateStr}">
+                        <select name="workType_${dateStr}">
                             <option value="出勤" ${workType === '出勤' ? 'selected' : ''}>出勤</option>
                             <option value="公休" ${workType === '公休' ? 'selected' : ''}>公休</option>
                             <option value="有給" ${workType === '有給' ? 'selected' : ''}>有給</option>
@@ -448,6 +427,9 @@
                     <td>
                         <input type="number" name="breakTime_${dateStr}" min="0" value="${breakTime}">
                     </td>
+                    <td>
+                        <input type="text" name="changeReason_${dateStr}" placeholder="変更理由を入力" disabled>
+                    </td>
                 `;
                 tbody.appendChild(tr);
 
@@ -456,7 +438,24 @@
                 option.textContent = `${month}/${day}(${dayOfWeek})`;
                 copySourceSelect.appendChild(option);
 
-                const workTypeSelect = tr.querySelector('select');
+                // 変更チェックボックスのイベント
+                const checkbox = tr.querySelector(`input[name="changeFlag_${dateStr}"]`);
+                const reasonInput = tr.querySelector(`input[name="changeReason_${dateStr}"]`);
+                
+                checkbox.addEventListener('change', (e) => {
+                    if (e.target.checked) {
+                        reasonInput.disabled = false;
+                        reasonInput.required = true;
+                    } else {
+                        reasonInput.disabled = true;
+                        reasonInput.required = false;
+                        reasonInput.value = '';
+                        reasonInput.classList.remove('error');
+                    }
+                });
+
+                // 勤務区分変更時
+                const workTypeSelect = tr.querySelector(`select[name="workType_${dateStr}"]`);
                 workTypeSelect.addEventListener('change', (e) => {
                     const row = e.target.closest('tr');
                     if (e.target.value === '公休' || e.target.value === '有給') {
@@ -469,23 +468,17 @@
                         row.querySelector('input[type="number"]').value = '60';
                     }
                     updateStats();
-                    checkChanges();
                 });
 
-                // 入力変更時に変更検出
-                tr.querySelectorAll('input').forEach(input => {
-                    input.addEventListener('input', () => {
-                        if (input.type === 'number') {
-                            validateNumber(input);
-                        }
-                        updateStats();
-                        checkChanges();
-                    });
+                // 休憩時間入力時
+                const breakTimeInput = tr.querySelector(`input[name="breakTime_${dateStr}"]`);
+                breakTimeInput.addEventListener('input', (e) => {
+                    validateNumber(e.target);
+                    updateStats();
                 });
             }
 
             updateStats();
-            checkChanges();
         }
 
         function toHalfWidth(str) {
@@ -510,7 +503,8 @@
         function updateStats() {
             let workDays = 0, holidays = 0, paidLeave = 0;
             document.querySelectorAll('#calendarBody tr').forEach(row => {
-                const workType = row.querySelector('select').value;
+                const dateStr = row.dataset.date;
+                const workType = row.querySelector(`select[name="workType_${dateStr}"]`).value;
                 if (workType === '出勤') workDays++;
                 else if (workType === '公休') holidays++;
                 else if (workType === '有給') paidLeave++;
@@ -518,41 +512,6 @@
             document.getElementById('workDaysCount').textContent = `${workDays}日`;
             document.getElementById('holidaysCount').textContent = `${holidays}日`;
             document.getElementById('paidLeaveCount').textContent = `${paidLeave}日`;
-        }
-
-        function checkChanges() {
-            const changedDates = [];
-            document.querySelectorAll('#calendarBody tr').forEach(row => {
-                const select = row.querySelector('select');
-                const dateStr = select.getAttribute('data-date');
-                const workType = select.value;
-                const startTime = row.querySelector(`input[name="startTime_${dateStr}"]`).value;
-                const endTime = row.querySelector(`input[name="endTime_${dateStr}"]`).value;
-                const breakTime = row.querySelector(`input[name="breakTime_${dateStr}"]`).value;
-
-                const original = originalData[dateStr];
-                if (original &&
-                    (original.workType !== workType ||
-                     original.startTime !== (startTime || '') ||
-                     original.endTime !== (endTime || '') ||
-                     original.breakTime !== (breakTime || ''))) {
-                    const [y, m, d] = dateStr.split('-');
-                    changedDates.push(`${m}/${d}`);
-                }
-            });
-
-            const isUpdate = Object.keys(originalData).length > 0;
-            const hasChanges = changedDates.length > 0;
-            const isSecondOrLater = isUpdate && hasChanges;
-
-            if (isSecondOrLater) {
-                document.getElementById('warningBox').classList.add('show');
-                document.getElementById('changedDaysText').textContent = ` ${changedDates.join(', ')} (${changedDates.length}日)`;
-                document.getElementById('changeReasonSection').classList.add('show');
-            } else {
-                document.getElementById('warningBox').classList.remove('show');
-                document.getElementById('changeReasonSection').classList.remove('show');
-            }
         }
 
         document.getElementById('copyAllBtn').addEventListener('click', () => {
@@ -574,8 +533,7 @@
             const sourceBreakTime = document.querySelector(`input[name="breakTime_${sourceDate}"]`).value;
 
             document.querySelectorAll('#calendarBody tr').forEach(row => {
-                const select = row.querySelector('select');
-                const dateStr = select.getAttribute('data-date');
+                const dateStr = row.dataset.date;
                 if (dateStr === sourceDate) return;
                 if (mode === 'weekdays') {
                     const date = new Date(dateStr);
@@ -587,7 +545,6 @@
                 row.querySelector(`input[name="breakTime_${dateStr}"]`).value = sourceBreakTime;
             });
             updateStats();
-            checkChanges();
             showSuccess(`${mode === 'all' ? '全日' : '平日'}にコピーしました`);
             setTimeout(() => document.getElementById('successMessage').classList.remove('show'), 2000);
         }
@@ -611,77 +568,58 @@
                 return;
             }
 
-            // 変更検出
-            const allShifts = [];
-            const changedShifts = [];
+            // 変更理由チェック
+            const rows = document.querySelectorAll('#calendarBody tr');
+            let reasonError = false;
+            rows.forEach(row => {
+                const dateStr = row.dataset.date;
+                const checkbox = row.querySelector(`input[name="changeFlag_${dateStr}"]`);
+                const reasonInput = row.querySelector(`input[name="changeReason_${dateStr}"]`);
+                
+                if (checkbox.checked && !reasonInput.value.trim()) {
+                    reasonInput.classList.add('error');
+                    reasonError = true;
+                } else {
+                    reasonInput.classList.remove('error');
+                }
+            });
 
-            document.querySelectorAll('#calendarBody tr').forEach(row => {
-                const select = row.querySelector('select');
-                const dateStr = select.getAttribute('data-date');
-                const workType = select.value;
+            if (reasonError) {
+                showError('変更にチェックを入れた日付は変更理由を入力してください');
+                return;
+            }
+
+            // データ構築
+            const shifts = [];
+            rows.forEach(row => {
+                const dateStr = row.dataset.date;
+                const date = new Date(dateStr);
+                const dayOfWeek = ['日', '月', '火', '水', '木', '金', '土'][date.getDay()];
+                
+                const workType = row.querySelector(`select[name="workType_${dateStr}"]`).value;
                 const startTime = row.querySelector(`input[name="startTime_${dateStr}"]`).value;
                 const endTime = row.querySelector(`input[name="endTime_${dateStr}"]`).value;
                 const breakTime = row.querySelector(`input[name="breakTime_${dateStr}"]`).value;
-                const date = new Date(dateStr);
-                const dayOfWeek = ['日', '月', '火', '水', '木', '金', '土'][date.getDay()];
+                const changeFlag = row.querySelector(`input[name="changeFlag_${dateStr}"]`).checked;
+                const changeReason = row.querySelector(`input[name="changeReason_${dateStr}"]`).value;
 
-                const original = originalData[dateStr];
-                const isChanged = !original ||
-                    original.workType !== workType ||
-                    original.startTime !== (startTime || '') ||
-                    original.endTime !== (endTime || '') ||
-                    original.breakTime !== (breakTime || '');
-
-                const shiftData = {
+                shifts.push({
                     date: dateStr,
                     dayOfWeek: dayOfWeek,
                     workType: workType,
                     startTime: startTime || '',
                     endTime: endTime || '',
                     breakTime: breakTime || '',
-                    isChanged: isChanged && Object.keys(originalData).length > 0
-                };
-
-                allShifts.push(shiftData);
-                if (isChanged) {
-                    changedShifts.push(shiftData);
-                }
+                    changeFlag: changeFlag,
+                    changeReason: changeReason
+                });
             });
-
-            const isUpdate = Object.keys(originalData).length > 0;
-            const hasChanges = changedShifts.length > 0;
-            const isSecondOrLater = isUpdate && hasChanges;
-
-            // 変更理由チェック（2回目以降の変更時のみ必須）
-            let changeReason = '';
-            if (isSecondOrLater) {
-                changeReason = document.getElementById('changeReason').value.trim();
-                const reasonInput = document.getElementById('changeReason');
-                const reasonError = document.getElementById('changeReason-error');
-                
-                if (!changeReason) {
-                    reasonInput.classList.add('error');
-                    reasonError.style.display = 'block';
-                    showError('変更理由を入力してください');
-                    reasonInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    return;
-                } else {
-                    reasonInput.classList.remove('error');
-                    reasonError.style.display = 'none';
-                }
-            }
-
-            // 送信データ構築（初回は全日、2回目以降は変更分のみ）
-            const shiftsToSend = isSecondOrLater ? changedShifts : allShifts;
 
             const data = {
                 employeeId: employeeId,
                 employeeName: employeeName,
                 yearMonth: currentYearMonth,
-                shifts: shiftsToSend,
-                isUpdate: isUpdate,
-                changeReason: changeReason,
-                changedCount: changedShifts.length
+                shifts: shifts
             };
 
             document.getElementById('submitBtn').disabled = true;
@@ -699,10 +637,7 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    const message = isSecondOrLater
-                        ? `シフトを更新しました（${data.changedCount}日変更）`
-                        : 'シフトを提出しました';
-                    showSuccess(message);
+                    showSuccess('シフトを提出しました');
                     setTimeout(() => window.location.href = 'menu.html', 2000);
                 } else {
                     showError(result.message || '送信に失敗しました');
