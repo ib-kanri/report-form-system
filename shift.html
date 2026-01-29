@@ -541,10 +541,12 @@
                 }
             });
 
+            // 2回目以降の変更のみ警告と変更理由欄を表示
             const isUpdate = Object.keys(originalData).length > 0;
             const hasChanges = changedDates.length > 0;
+            const isSecondOrLater = isUpdate && hasChanges;
 
-            if (isUpdate && hasChanges) {
+            if (isSecondOrLater) {
                 document.getElementById('warningBox').classList.add('show');
                 document.getElementById('changedDaysText').textContent = ` ${changedDates.join(', ')} (${changedDates.length}日)`;
                 document.getElementById('changeReasonSection').classList.add('show');
