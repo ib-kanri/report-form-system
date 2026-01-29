@@ -649,10 +649,11 @@
 
             const isUpdate = Object.keys(originalData).length > 0;
             const hasChanges = changedShifts.length > 0;
+            const isSecondOrLater = isUpdate && hasChanges;
 
-            // 変更理由チェック（更新時のみ）
+            // 変更理由チェック（2回目以降の変更時のみ必須）
             let changeReason = '';
-            if (isUpdate && hasChanges) {
+            if (isSecondOrLater) {
                 changeReason = document.getElementById('changeReason').value.trim();
                 const reasonInput = document.getElementById('changeReason');
                 const reasonError = document.getElementById('changeReason-error');
@@ -669,8 +670,8 @@
                 }
             }
 
-            // 送信データ構築（初回は全日、更新時は変更分のみ）
-            const shiftsToSend = isUpdate && hasChanges ? changedShifts : allShifts;
+            // 送信データ構築（初回は全日、2回目以降は変更分のみ）
+            const shiftsToSend = isSecondOrLater ? changedShifts : allShifts;
 
             const data = {
                 employeeId: employeeId,
@@ -697,7 +698,7 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    const message = isUpdate && hasChanges
+                    const message = isSecondOrLater
                         ? `シフトを更新しました（${data.changedCount}日変更）`
                         : 'シフトを提出しました';
                     showSuccess(message);
