@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>業務報告 - INTER BLUE 報告システム</title>
+    <style>
+        :root {
+            --primary: #1a73e8;
+            --primary-dark: #1557b0;
+            --success: #34a853;
+            --error: #ea4335;
+            --warning: #fbbc04;
+            --gray-50: #f8f9fa;
+            --gray-100: #f1f3f4;
+            --gray-200: #e8eaed;
+            --gray-700: #5f6368;
+            --gray-900: #202124;
+            --info-bg: #e3f2fd;
+            --info-text: #1976d2;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            color: var(--gray-900);
+            background: var(--gray-50);
+            min-height: 100vh;
+        }
+
+        .header {
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title h1 {
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        .user-info {
+            font-size: 14px;
+            color: var(--gray-700);
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 24px 16px 80px;
+        }
+
+        .page-title {
+            font-size: 24px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .page-subtitle {
+            font-size: 14px;
+            color: var(--gray-700);
+            margin-bottom: 24px;
+        }
+
+        .section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--gray-900);
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--gray-100);
+        }
+
+        .info-box {
+            background: var(--info-bg);
+            color: var(--info-text);
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--gray-900);
+            margin-bottom: 8px;
+        }
+
+        .required {
+            color: var(--error);
+            margin-left: 4px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 16px;
+            font-size: 16px;
+            border: 1px solid var(--gray-200);
+            border-radius: 4px;
+            background: white;
+            transition: border-color 0.2s;
+        }
+
+        input[type="date"],
+        input[type="time"],
+        input[type="number"],
+        input[type="text"],
+        select {
+            height: 48px;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.1);
+        }
+
+        input:read-only {
+            background: var(--gray-50);
+            color: var(--gray-700);
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        .time-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            margin-right: 8px;
+            cursor: pointer;
+        }
+
+        .checkbox-group label {
+            margin-bottom: 0;
+            cursor: pointer;
+            font-weight: 400;
+        }
+
+        .conditional-field {
+            margin-left: 28px;
+            margin-top: 12px;
+            padding-left: 16px;
+            border-left: 3px solid var(--gray-200);
+        }
+
+        .error-message {
+            background: #fce8e6;
+            color: #c5221f;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 16px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .btn {
+            width: 100%;
+            height: 48px;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: 500;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-primary:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary:disabled {
+            background: var(--gray-200);
+            color: var(--gray-700);
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--gray-700);
+            border: 1px solid var(--gray-200);
+        }
+
+        .btn-secondary:hover {
+            background: var(--gray-50);
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--gray-200);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .calc-result {
+            display: inline-block;
+            margin-left: 8px;
+            padding: 4px 12px;
+            background: var(--gray-100);
+            border-radius: 12px;
+            font-size: 14px;
+            color: var(--gray-700);
+        }
+
+        @media (max-width: 600px) {
+            .time-row {
+                grid-template-columns: 1fr;
+            }
+
+            .button-group {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="header-title">
+                <h1>業務報告</h1>
+            </div>
+            <div class="user-info">
+                <span id="userName"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2 class="page-title">業務報告</h2>
+        <p class="page-subtitle">勤怠情報と業務内容を報告してください</p>
+
+        <div id="errorMessage" class="error-message"></div>
+
+        <form id="workForm">
+            <!-- 基本情報 -->
+            <div class="section">
+                <h3 class="section-title">基本情報</h3>
+                
+                <div class="form-group">
+                    <label for="date">報告日付<span class="required">*</span></label>
+                    <input type="date" id="date" name="date" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="employeeId">社員ID</label>
+                    <input type="text" id="employeeId" name="employeeId" readonly>
+                </div>
+
+                <div class="form-group">
+                    <label for="employeeName">氏名</label>
+                    <input type="text" id="employeeName" name="employeeName" readonly>
+                </div>
+
+                <div class="info-box" id="defaultInfo"></div>
+
+                <div class="form-group">
+                    <label for="kubun">稼働区分<span class="required">*</span></label>
+                    <select id="kubun" name="kubun" required>
+                        <option value="">選択してください</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="workplace">稼働先<span class="required">*</span></label>
+                    <select id="workplace" name="workplace" required>
+                        <option value="">選択してください</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- 勤怠情報 -->
+            <div class="section">
+                <h3 class="section-title">勤怠情報</h3>
+
+                <div class="time-row">
+                    <div class="form-group">
+                        <label for="startTime">開始時刻<span class="required">*</span></label>
+                        <input type="time" id="startTime" name="startTime" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="endTime">終了時刻<span class="required">*</span></label>
+                        <input type="time" id="endTime" name="endTime" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="breakTime">休憩時間（分）<span class="required">*</span></label>
+                    <input type="number" id="breakTime" name="breakTime" min="0" value="60" required>
+                    <span class="calc-result" id="actualWorkTime">実働時間: -</span>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="lateFlag" name="lateFlag">
+                    <label for="lateFlag">遅刻あり</label>
+                </div>
+                <div class="conditional-field" id="lateField" style="display: none;">
+                    <div class="form-group">
+                        <label for="lateTime">遅刻時間（分）<span class="required">*</span></label>
+                        <input type="number" id="lateTime" name="lateTime" min="0">
+                    </div>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="earlyFlag" name="earlyFlag">
+                    <label for="earlyFlag">早退あり</label>
+                </div>
+                <div class="conditional-field" id="earlyField" style="display: none;">
+                    <div class="form-group">
+                        <label for="earlyTime">早退時刻<span class="required">*</span></label>
+                        <input type="time" id="earlyTime" name="earlyTime">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 交通費情報 -->
+            <div class="section">
+                <h3 class="section-title">交通費情報</h3>
+
+                <div class="form-group">
+                    <label for="route">経路</label>
+                    <input type="text" id="route" name="route" placeholder="例: 自宅 → 栄駅 → 稼働先">
+                </div>
+
+                <div class="form-group">
+                    <label for="transportCost">交通費（円）</label>
+                    <input type="number" id="transportCost" name="transportCost" min="0" placeholder="0">
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="teikiFlag" name="teikiFlag">
+                    <label for="teikiFlag">定期利用</label>
+                </div>
+                <div class="conditional-field" id="teikiField" style="display: none;">
+                    <div class="form-group">
+                        <label for="teikiSection">定期区間<span class="required">*</span></label>
+                        <input type="text" id="teikiSection" name="teikiSection" placeholder="例: 名古屋駅 ⇔ 栄駅">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="teikiMonth">定期購入月<span class="required">*</span></label>
+                        <input type="month" id="teikiMonth" name="teikiMonth">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="teikiCost">定期代（円）<span class="required">*</span></label>
+                        <input type="number" id="teikiCost" name="teikiCost" min="0">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="transportNote">交通費備考</label>
+                    <textarea id="transportNote" name="transportNote" placeholder="交通費に関する補足事項があれば記入してください"></textarea>
+                </div>
+            </div>
+
+            <!-- 振り返り・目標 -->
+            <div class="section">
+                <h3 class="section-title">振り返り・目標</h3>
+
+                <div class="form-group">
+                    <label for="reflection">本日の振り返り</label>
+                    <textarea id="reflection" name="reflection" placeholder="本日の業務内容や気づきを記入してください"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="nextGoal">次回の目標</label>
+                    <textarea id="nextGoal" name="nextGoal" placeholder="次回の業務に向けた目標を記入してください"></textarea>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button type="button" id="cancelBtn" class="btn btn-secondary">キャンセル</button>
+                <button type="submit" id="submitBtn" class="btn btn-primary">送信</button>
+            </div>
+        </form>
+
+        <div id="loading" class="loading">
+            <div class="loading-spinner"></div>
+            <p style="margin-top: 12px; color: var(--gray-700);">送信中...</p>
+        </div>
+    </div>
+
+    <script>
+        const SCRIPT_URL = 'https://interblue-proxy.k-hamada-ib.workers.dev/';
+
+        // 認証チェック
+        const employeeId = sessionStorage.getItem('employeeId');
+        const employeeName = sessionStorage.getItem('employeeName');
+        const defaultKubun = sessionStorage.getItem('defaultKubun');
+        const defaultWorkplace = sessionStorage.getItem('defaultWorkplace');
+
+        if (!employeeId) {
+            window.location.href = 'index.html';
+        }
+
+        // 初期化
+        document.getElementById('userName').textContent = employeeName;
+        document.getElementById('employeeId').value = employeeId;
+        document.getElementById('employeeName').value = employeeName;
+        document.getElementById('date').valueAsDate = new Date();
+
+        // デフォルト値表示
+        if (defaultKubun && defaultWorkplace) {
+            document.getElementById('defaultInfo').textContent = 
+                `デフォルト値: ${defaultKubun} / ${defaultWorkplace}`;
+        }
+
+        // 稼働区分・稼働先マスタ取得
+        loadMasterData();
+
+        async function loadMasterData() {
+            try {
+                const response = await fetch(SCRIPT_URL + '?action=getKubunMaster');
+                const result = await response.json();
+
+                if (result.success) {
+                    // 稼働区分セット
+                    const kubunSelect = document.getElementById('kubun');
+                    Object.keys(result.data).forEach(kubun => {
+                        const option = document.createElement('option');
+                        option.value = kubun;
+                        option.textContent = kubun;
+                        if (kubun === defaultKubun) {
+                            option.selected = true;
+                        }
+                        kubunSelect.appendChild(option);
+                    });
+
+                    // 稼働先マスタ取得
+                    const workplaceResponse = await fetch(SCRIPT_URL + '?action=getWorkplaceMaster');
+                    const workplaceResult = await workplaceResponse.json();
+
+                    if (workplaceResult.success) {
+                        const workplaceSelect = document.getElementById('workplace');
+                        workplaceResult.data.forEach(workplace => {
+                            const option = document.createElement('option');
+                            option.value = workplace;
+                            option.textContent = workplace;
+                            if (workplace === defaultWorkplace) {
+                                option.selected = true;
+                            }
+                            workplaceSelect.appendChild(option);
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('マスタ取得エラー:', error);
+                showError('マスタデータの取得に失敗しました');
+            }
+        }
+
+        // 条件付きフィールドの表示制御
+        document.getElementById('lateFlag').addEventListener('change', (e) => {
+            document.getElementById('lateField').style.display = e.target.checked ? 'block' : 'none';
+            if (!e.target.checked) {
+                document.getElementById('lateTime').value = '';
+            }
+        });
+
+        document.getElementById('earlyFlag').addEventListener('change', (e) => {
+            document.getElementById('earlyField').style.display = e.target.checked ? 'block' : 'none';
+            if (!e.target.checked) {
+                document.getElementById('earlyTime').value = '';
+            }
+        });
+
+        document.getElementById('teikiFlag').addEventListener('change', (e) => {
+            document.getElementById('teikiField').style.display = e.target.checked ? 'block' : 'none';
+            if (!e.target.checked) {
+                document.getElementById('teikiSection').value = '';
+                document.getElementById('teikiMonth').value = '';
+                document.getElementById('teikiCost').value = '';
+            }
+        });
+
+        // 実働時間計算
+        function calculateWorkTime() {
+            const startTime = document.getElementById('startTime').value;
+            const endTime = document.getElementById('endTime').value;
+            const breakTime = parseInt(document.getElementById('breakTime').value) || 0;
+            const lateTime = document.getElementById('lateFlag').checked ? 
+                (parseInt(document.getElementById('lateTime').value) || 0) : 0;
+            
+            if (!startTime || !endTime) {
+                document.getElementById('actualWorkTime').textContent = '実働時間: -';
+                return;
+            }
+
+            // 時刻差分計算（分単位）
+            const [startHour, startMin] = startTime.split(':').map(Number);
+            const [endHour, endMin] = endTime.split(':').map(Number);
+            const totalMinutes = (endHour * 60 + endMin) - (startHour * 60 + startMin);
+            
+            // 早退時間計算
+            let earlyMinutes = 0;
+            if (document.getElementById('earlyFlag').checked) {
+                const earlyTime = document.getElementById('earlyTime').value;
+                if (earlyTime) {
+                    const [earlyHour, earlyMin] = earlyTime.split(':').map(Number);
+                    earlyMinutes = (endHour * 60 + endMin) - (earlyHour * 60 + earlyMin);
+                }
+            }
+
+            // 実働時間 = 総時間 - 休憩 - 遅刻 - 早退
+            const actualMinutes = totalMinutes - breakTime - lateTime - earlyMinutes;
+            const actualHours = (actualMinutes / 60).toFixed(2);
+
+            document.getElementById('actualWorkTime').textContent = 
+                `実働時間: ${actualHours}時間`;
+        }
+
+        // 実働時間の自動計算
+        ['startTime', 'endTime', 'breakTime', 'lateTime', 'earlyTime'].forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.addEventListener('input', calculateWorkTime);
+            }
+        });
+
+        // キャンセルボタン
+        document.getElementById('cancelBtn').addEventListener('click', () => {
+            if (confirm('入力内容を破棄してメニューに戻りますか？')) {
+                window.location.href = 'menu.html';
+            }
+        });
+
+        // フォーム送信
+        document.getElementById('workForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // バリデーション
+            const lateFlag = document.getElementById('lateFlag').checked;
+            const lateTime = document.getElementById('lateTime').value;
+            if (lateFlag && !lateTime) {
+                showError('遅刻ありの場合、遅刻時間を入力してください');
+                return;
+            }
+
+            const earlyFlag = document.getElementById('earlyFlag').checked;
+            const earlyTime = document.getElementById('earlyTime').value;
+            if (earlyFlag && !earlyTime) {
+                showError('早退ありの場合、早退時刻を入力してください');
+                return;
+            }
+
+            const teikiFlag = document.getElementById('teikiFlag').checked;
+            if (teikiFlag) {
+                const teikiSection = document.getElementById('teikiSection').value;
+                const teikiMonth = document.getElementById('teikiMonth').value;
+                const teikiCost = document.getElementById('teikiCost').value;
+                if (!teikiSection || !teikiMonth || !teikiCost) {
+                    showError('定期利用の場合、定期区間・購入月・定期代を入力してください');
+                    return;
+                }
+            }
+
+            // 位置情報取得
+            let locationData = { latitude: '', longitude: '', accuracy: '', timestamp: '' };
+            try {
+                const position = await new Promise((resolve, reject) => {
+                    navigator.geolocation.getCurrentPosition(resolve, reject, {
+                        timeout: 5000,
+                        maximumAge: 0
+                    });
+                });
+                locationData = {
+                    latitude: position.coords.latitude,
+                    longitude: position.coords.longitude,
+                    accuracy: position.coords.accuracy,
+                    timestamp: new Date(position.timestamp).toISOString()
+                };
+            } catch (error) {
+                console.log('位置情報取得失敗:', error);
+            }
+
+            // 実働時間・時間外労働計算
+            const startTime = document.getElementById('startTime').value;
+            const endTime = document.getElementById('endTime').value;
+            const breakTime = parseInt(document.getElementById('breakTime').value) || 0;
+            const lateMinutes = lateFlag ? (parseInt(document.getElementById('lateTime').value) || 0) : 0;
+            
+            let earlyMinutes = 0;
+            if (earlyFlag && earlyTime) {
+                const [earlyHour, earlyMin] = earlyTime.split(':').map(Number);
+                const [endHour, endMin] = endTime.split(':').map(Number);
+                earlyMinutes = (endHour * 60 + endMin) - (earlyHour * 60 + earlyMin);
+            }
+
+            const [startHour, startMin] = startTime.split(':').map(Number);
+            const [endHour, endMin] = endTime.split(':').map(Number);
+            const totalMinutes = (endHour * 60 + endMin) - (startHour * 60 + startMin);
+            const actualMinutes = totalMinutes - breakTime - lateMinutes - earlyMinutes;
+            const actualHours = actualMinutes / 60;
+            const overtimeHours = Math.max(actualHours - 8, 0);
+
+            // データ構築
+            const data = {
+                reportDate: new Date().toISOString(),
+                employeeId: document.getElementById('employeeId').value,
+                employeeName: document.getElementById('employeeName').value,
+                date: document.getElementById('date').value,
+                kubun: document.getElementById('kubun').value,
+                workplace: document.getElementById('workplace').value,
+                startTime: startTime,
+                endTime: endTime,
+                breakTime: breakTime,
+                lateFlag: lateFlag,
+                lateTime: lateMinutes,
+                earlyFlag: earlyFlag,
+                earlyTime: earlyTime,
+                actualWorkTime: actualHours.toFixed(2),
+                overtimeHours: overtimeHours.toFixed(2),
+                route: document.getElementById('route').value,
+                transportCost: document.getElementById('transportCost').value || 0,
+                teikiFlag: teikiFlag,
+                teikiSection: document.getElementById('teikiSection').value,
+                teikiMonth: document.getElementById('teikiMonth').value,
+                teikiCost: document.getElementById('teikiCost').value || 0,
+                transportNote: document.getElementById('transportNote').value,
+                reflection: document.getElementById('reflection').value,
+                nextGoal: document.getElementById('nextGoal').value,
+                latitude: locationData.latitude,
+                longitude: locationData.longitude,
+                accuracy: locationData.accuracy,
+                locationTimestamp: locationData.timestamp
+            };
+
+            // ローディング開始
+            document.getElementById('submitBtn').disabled = true;
+            document.getElementById('loading').classList.add('show');
+            document.getElementById('errorMessage').classList.remove('show');
+
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'saveWork',
+                        data: data
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    // sessionStorageに保存
+                    sessionStorage.setItem('lastKubun', data.kubun);
+                    sessionStorage.setItem('lastDate', data.date);
+                    sessionStorage.setItem('lastWorkplace', data.workplace);
+
+                    // performance.htmlへ自動遷移
+                    window.location.href = `performance.html?kubun=${encodeURIComponent(data.kubun)}&date=${data.date}`;
+                } else {
+                    showError(result.message || '送信に失敗しました');
+                    document.getElementById('submitBtn').disabled = false;
+                    document.getElementById('loading').classList.remove('show');
+                }
+            } catch (error) {
+                console.error('送信エラー:', error);
+                showError('通信エラーが発生しました。もう一度お試しください。');
+                document.getElementById('submitBtn').disabled = false;
+                document.getElementById('loading').classList.remove('show');
+            }
+        });
+
+        function showError(message) {
+            const errorElement = document.getElementById('errorMessage');
+            errorElement.textContent = message;
+            errorElement.classList.add('show');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>

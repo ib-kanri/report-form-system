@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>自分の実績 - INTER BLUE 報告システム</title>
+    <style>
+        :root {
+            --primary: #1a73e8;
+            --primary-dark: #1557b0;
+            --success: #34a853;
+            --error: #ea4335;
+            --warning: #fbbc04;
+            --gray-50: #f8f9fa;
+            --gray-100: #f1f3f4;
+            --gray-200: #e8eaed;
+            --gray-700: #5f6368;
+            --gray-900: #202124;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            color: var(--gray-900);
+            background: var(--gray-50);
+            min-height: 100vh;
+        }
+
+        .header {
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title h1 {
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        .user-info {
+            font-size: 14px;
+            color: var(--gray-700);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px 16px 80px;
+        }
+
+        .page-title {
+            font-size: 24px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .page-subtitle {
+            font-size: 14px;
+            color: var(--gray-700);
+            margin-bottom: 24px;
+        }
+
+        .month-selector {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .month-selector-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .month-selector input {
+            flex: 1;
+            height: 48px;
+            padding: 12px 16px;
+            font-size: 16px;
+            border: 1px solid var(--gray-200);
+            border-radius: 4px;
+        }
+
+        .error-message {
+            background: #fce8e6;
+            color: #c5221f;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 16px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .summary-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .summary-card-label {
+            font-size: 14px;
+            color: var(--gray-700);
+            margin-bottom: 8px;
+        }
+
+        .summary-card-value {
+            font-size: 32px;
+            font-weight: 500;
+            color: var(--gray-900);
+            margin-bottom: 4px;
+        }
+
+        .summary-card-change {
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .summary-card-change.positive {
+            color: var(--success);
+        }
+
+        .summary-card-change.negative {
+            color: var(--error);
+        }
+
+        .summary-card-change.neutral {
+            color: var(--gray-700);
+        }
+
+        .details-section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--gray-100);
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+
+        th {
+            background: var(--gray-100);
+            padding: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            text-align: left;
+            border-bottom: 2px solid var(--gray-200);
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid var(--gray-200);
+            font-size: 14px;
+        }
+
+        tr:hover {
+            background: var(--gray-50);
+        }
+
+        .btn {
+            height: 48px;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: 500;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--gray-700);
+            border: 1px solid var(--gray-200);
+        }
+
+        .btn-secondary:hover {
+            background: var(--gray-50);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--gray-200);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: var(--gray-700);
+        }
+
+        .back-btn {
+            margin-top: 24px;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="header-title">
+                <h1>自分の実績</h1>
+            </div>
+            <div class="user-info">
+                <span id="userName"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2 class="page-title">自分の実績</h2>
+        <p class="page-subtitle">個人の実績データを確認できます</p>
+
+        <div class="month-selector">
+            <div class="month-selector-row">
+                <label for="targetMonth" style="font-weight: 500; white-space: nowrap;">対象年月:</label>
+                <input type="month" id="targetMonth" name="targetMonth">
+                <button type="button" id="loadBtn" class="btn btn-primary">読み込み</button>
+            </div>
+        </div>
+
+        <div id="errorMessage" class="error-message"></div>
+
+        <div id="loading" class="loading">
+            <div class="loading-spinner"></div>
+            <p style="margin-top: 12px; color: var(--gray-700);">データ取得中...</p>
+        </div>
+
+        <div id="contentArea" style="display: none;">
+            <div class="summary-grid" id="summaryGrid">
+                <!-- 動的生成 -->
+            </div>
+
+            <div class="details-section">
+                <h3 class="section-title">詳細実績</h3>
+                <div class="table-container">
+                    <table id="detailsTable">
+                        <thead>
+                            <tr>
+                                <th>項目</th>
+                                <th>今月</th>
+                                <th>先月</th>
+                                <th>増減</th>
+                                <th>平均</th>
+                                <th>平均比</th>
+                            </tr>
+                        </thead>
+                        <tbody id="detailsBody">
+                            <!-- 動的生成 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="noDataArea" class="no-data" style="display: none;">
+            対象月のデータがありません
+        </div>
+
+        <div class="back-btn">
+            <button type="button" id="backBtn" class="btn btn-secondary">メニューに戻る</button>
+        </div>
+    </div>
+
+    <script>
+        const SCRIPT_URL = 'https://interblue-proxy.k-hamada-ib.workers.dev/';
+
+        // 認証チェック
+        const employeeId = sessionStorage.getItem('employeeId');
+        const employeeName = sessionStorage.getItem('employeeName');
+
+        if (!employeeId) {
+            window.location.href = 'index.html';
+        }
+
+        document.getElementById('userName').textContent = employeeName;
+
+        // 初期化：デフォルトは今月
+        const today = new Date();
+        const defaultYearMonth = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
+        document.getElementById('targetMonth').value = defaultYearMonth;
+
+        // 自動読み込み
+        loadStats(defaultYearMonth);
+
+        // 読み込みボタン
+        document.getElementById('loadBtn').addEventListener('click', () => {
+            const yearMonth = document.getElementById('targetMonth').value;
+            if (!yearMonth) {
+                showError('対象年月を選択してください');
+                return;
+            }
+            loadStats(yearMonth);
+        });
+
+        async function loadStats(yearMonth) {
+            document.getElementById('loading').classList.add('show');
+            document.getElementById('contentArea').style.display = 'none';
+            document.getElementById('noDataArea').style.display = 'none';
+            document.getElementById('errorMessage').classList.remove('show');
+
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'getMyStats',
+                        employeeId: employeeId,
+                        yearMonth: yearMonth
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success && result.data) {
+                    renderStats(result.data);
+                    document.getElementById('contentArea').style.display = 'block';
+                } else {
+                    document.getElementById('noDataArea').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('データ取得エラー:', error);
+                showError('データの取得に失敗しました');
+            } finally {
+                document.getElementById('loading').classList.remove('show');
+            }
+        }
+
+        function renderStats(data) {
+            // サマリーカード生成
+            const summaryGrid = document.getElementById('summaryGrid');
+            summaryGrid.innerHTML = '';
+
+            const currentMonth = data.currentMonth || {};
+            const lastMonth = data.lastMonth || {};
+            const average = data.average || {};
+
+            // 主要4項目のサマリー表示（例）
+            const summaryItems = [
+                { label: '出勤日数', key: 'workDays', suffix: '日' },
+                { label: '総労働時間', key: 'totalHours', suffix: '時間' },
+                { label: '実績合計', key: 'totalPerformance', suffix: '件' },
+                { label: '達成率', key: 'achievementRate', suffix: '%' }
+            ];
+
+            summaryItems.forEach(item => {
+                const currentValue = currentMonth[item.key] || 0;
+                const lastValue = lastMonth[item.key] || 0;
+                const diff = currentValue - lastValue;
+                const changeClass = diff > 0 ? 'positive' : diff < 0 ? 'negative' : 'neutral';
+                const changeSymbol = diff > 0 ? '▲' : diff < 0 ? '▼' : '－';
+
+                const card = document.createElement('div');
+                card.className = 'summary-card';
+                card.innerHTML = `
+                    <div class="summary-card-label">${item.label}</div>
+                    <div class="summary-card-value">${currentValue.toLocaleString()}${item.suffix}</div>
+                    <div class="summary-card-change ${changeClass}">
+                        ${changeSymbol} ${Math.abs(diff).toLocaleString()} (先月比)
+                    </div>
+                `;
+                summaryGrid.appendChild(card);
+            });
+
+            // 詳細テーブル生成
+            const tbody = document.getElementById('detailsBody');
+            tbody.innerHTML = '';
+
+            // currentMonthの全項目を表示
+            Object.keys(currentMonth).forEach(key => {
+                if (summaryItems.some(item => item.key === key)) return; // サマリーに表示済みはスキップ
+
+                const currentValue = currentMonth[key] || 0;
+                const lastValue = lastMonth[key] || 0;
+                const avgValue = average[key] || 0;
+                const diff = currentValue - lastValue;
+                const avgDiff = currentValue - avgValue;
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${key}</td>
+                    <td>${currentValue.toLocaleString()}</td>
+                    <td>${lastValue.toLocaleString()}</td>
+                    <td style="color: ${diff > 0 ? 'var(--success)' : diff < 0 ? 'var(--error)' : 'var(--gray-700)'}">
+                        ${diff > 0 ? '+' : ''}${diff.toLocaleString()}
+                    </td>
+                    <td>${avgValue.toLocaleString()}</td>
+                    <td style="color: ${avgDiff > 0 ? 'var(--success)' : avgDiff < 0 ? 'var(--error)' : 'var(--gray-700)'}">
+                        ${avgDiff > 0 ? '+' : ''}${avgDiff.toLocaleString()}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // データがない場合
+            if (Object.keys(currentMonth).length === 0) {
+                const tr = document.createElement('tr');
+                tr.innerHTML = '<td colspan="6" style="text-align: center; color: var(--gray-700);">データがありません</td>';
+                tbody.appendChild(tr);
+            }
+        }
+
+        // メニューに戻る
+        document.getElementById('backBtn').addEventListener('click', () => {
+            window.location.href = 'menu.html';
+        });
+
+        function showError(message) {
+            const errorElement = document.getElementById('errorMessage');
+            errorElement.textContent = message;
+            errorElement.classList.add('show');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理者メニュー - INTER BLUE 報告システム</title>
+    <style>
+        :root {
+            --primary: #1a73e8;
+            --primary-dark: #1557b0;
+            --success: #34a853;
+            --error: #ea4335;
+            --warning: #fbbc04;
+            --gray-50: #f8f9fa;
+            --gray-100: #f1f3f4;
+            --gray-200: #e8eaed;
+            --gray-700: #5f6368;
+            --gray-900: #202124;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            color: var(--gray-900);
+            background: var(--gray-50);
+            min-height: 100vh;
+        }
+
+        .header {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title h1 {
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        .header-badge {
+            background: rgba(255,255,255,0.2);
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-right: 12px;
+        }
+
+        .user-info {
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px 16px;
+        }
+
+        .section {
+            margin-bottom: 32px;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--gray-700);
+            margin-bottom: 16px;
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+        }
+
+        .menu-card {
+            background: white;
+            border: 1px solid var(--gray-200);
+            border-radius: 8px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .menu-card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+
+        .menu-card.admin-card {
+            border-left: 4px solid var(--primary);
+        }
+
+        .menu-card-title {
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--gray-900);
+            margin-bottom: 8px;
+        }
+
+        .menu-card-desc {
+            font-size: 14px;
+            color: var(--gray-700);
+        }
+
+        .divider {
+            height: 1px;
+            background: var(--gray-200);
+            margin: 32px 0;
+        }
+
+        .logout-section {
+            margin-top: 48px;
+            text-align: center;
+        }
+
+        .btn-logout {
+            padding: 12px 24px;
+            font-size: 14px;
+            font-weight: 500;
+            color: white;
+            background: var(--gray-700);
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-logout:hover {
+            background: var(--gray-900);
+        }
+
+        @media (max-width: 768px) {
+            .menu-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="header-title">
+                <h1>INTER BLUE 報告システム</h1>
+            </div>
+            <div class="user-info">
+                <span class="header-badge">管理者</span>
+                <span id="userName"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="section">
+            <h2 class="section-title">管理者機能</h2>
+            <div class="menu-grid">
+                <a href="admin.html" class="menu-card admin-card">
+                    <div class="menu-card-title">管理者画面</div>
+                    <div class="menu-card-desc">ダッシュボード、シフト管理、未提出一覧、時間外労働</div>
+                </a>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="section">
+            <h2 class="section-title">日次報告</h2>
+            <div class="menu-grid">
+                <a href="work.html" class="menu-card">
+                    <div class="menu-card-title">業務報告</div>
+                    <div class="menu-card-desc">勤怠情報と業務内容を報告</div>
+                </a>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">その他報告</h2>
+            <div class="menu-grid">
+                <a href="meeting.html" class="menu-card">
+                    <div class="menu-card-title">ミーティング報告</div>
+                    <div class="menu-card-desc">会議の内容を記録</div>
+                </a>
+                <a href="training.html" class="menu-card">
+                    <div class="menu-card-title">研修報告</div>
+                    <div class="menu-card-desc">研修の内容を記録</div>
+                </a>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">予定・実績管理</h2>
+            <div class="menu-grid">
+                <a href="shift.html" class="menu-card">
+                    <div class="menu-card-title">シフト提出</div>
+                    <div class="menu-card-desc">月次のシフト予定を提出</div>
+                </a>
+                <a href="mystats.html" class="menu-card">
+                    <div class="menu-card-title">自分の実績</div>
+                    <div class="menu-card-desc">個人の実績データを確認</div>
+                </a>
+            </div>
+        </div>
+
+        <div class="logout-section">
+            <button id="logoutBtn" class="btn-logout">ログアウト</button>
+        </div>
+    </div>
+
+    <script>
+        // 認証チェック
+        const employeeName = sessionStorage.getItem('employeeName');
+        const isAdmin = sessionStorage.getItem('isAdmin');
+
+        if (!employeeName) {
+            window.location.href = 'index.html';
+        }
+
+        // 管理者権限チェック
+        if (isAdmin !== 'true') {
+            alert('管理者権限がありません');
+            window.location.href = 'menu.html';
+        }
+
+        // ユーザー名表示
+        document.getElementById('userName').textContent = employeeName;
+
+        // ログアウト
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            if (confirm('ログアウトしますか？')) {
+                sessionStorage.clear();
+                window.location.href = 'index.html';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ログイン - INTER BLUE 報告システム</title>
+    <style>
+        :root {
+            --primary: #1a73e8;
+            --primary-dark: #1557b0;
+            --success: #34a853;
+            --error: #ea4335;
+            --gray-50: #f8f9fa;
+            --gray-100: #f1f3f4;
+            --gray-200: #e8eaed;
+            --gray-700: #5f6368;
+            --gray-900: #202124;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            color: var(--gray-900);
+            background: var(--gray-50);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 400px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            padding: 32px;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .logo h1 {
+            font-size: 24px;
+            font-weight: 500;
+            color: var(--gray-900);
+            margin-bottom: 8px;
+        }
+
+        .logo p {
+            font-size: 14px;
+            color: var(--gray-700);
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--gray-900);
+            margin-bottom: 8px;
+        }
+
+        input {
+            width: 100%;
+            height: 48px;
+            padding: 12px 16px;
+            font-size: 16px;
+            border: 1px solid var(--gray-200);
+            border-radius: 4px;
+            background: white;
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.1);
+        }
+
+        .btn {
+            width: 100%;
+            height: 48px;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: 500;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-primary:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary:disabled {
+            background: var(--gray-200);
+            color: var(--gray-700);
+            cursor: not-allowed;
+        }
+
+        .error-message {
+            background: #fce8e6;
+            color: #c5221f;
+            padding: 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            margin-bottom: 16px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 16px;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid var(--gray-200);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 24px;
+            }
+
+            .logo h1 {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo">
+            <h1>INTER BLUE</h1>
+            <p>報告システム</p>
+        </div>
+
+        <div id="errorMessage" class="error-message"></div>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="employeeId">従業員ID</label>
+                <input 
+                    type="text" 
+                    id="employeeId" 
+                    name="employeeId" 
+                    required 
+                    autocomplete="username"
+                    placeholder="例: EMP001"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="password">パスワード</label>
+                <input 
+                    type="password" 
+                    id="password" 
+                    name="password" 
+                    required 
+                    autocomplete="current-password"
+                    placeholder="4桁の数字"
+                >
+            </div>
+
+            <button type="submit" id="loginBtn" class="btn btn-primary">
+                ログイン
+            </button>
+        </form>
+
+        <div id="loading" class="loading">
+            <div class="loading-spinner"></div>
+        </div>
+    </div>
+
+    <script>
+        const SCRIPT_URL = 'https://interblue-proxy.k-hamada-ib.workers.dev/';
+
+        const loginForm = document.getElementById('loginForm');
+        const loginBtn = document.getElementById('loginBtn');
+        const errorMessage = document.getElementById('errorMessage');
+        const loading = document.getElementById('loading');
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const employeeId = document.getElementById('employeeId').value.trim();
+            const password = document.getElementById('password').value.trim();
+
+            // バリデーション
+            if (!employeeId || !password) {
+                showError('従業員IDとパスワードを入力してください');
+                return;
+            }
+
+            // ローディング開始
+            loginBtn.disabled = true;
+            loginBtn.textContent = '認証中...';
+            loading.classList.add('show');
+            errorMessage.classList.remove('show');
+
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'authenticate',
+                        employeeId: employeeId,
+                        password: password
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    // セッションに保存
+                    sessionStorage.setItem('employeeId', result.data.employeeId);
+                    sessionStorage.setItem('employeeName', result.data.employeeName);
+                    sessionStorage.setItem('department', result.data.department);
+                    sessionStorage.setItem('team', result.data.team);
+                    sessionStorage.setItem('defaultKubun', result.data.defaultKubun);
+                    sessionStorage.setItem('defaultWorkplace', result.data.defaultWorkplace);
+                    sessionStorage.setItem('isAdmin', result.data.isAdmin);
+
+                    // 管理者判定で振り分け
+                    if (result.data.isAdmin) {
+                        window.location.href = 'admin-menu.html';
+                    } else {
+                        window.location.href = 'menu.html';
+                    }
+                } else {
+                    showError(result.message || 'ログインに失敗しました');
+                    loginBtn.disabled = false;
+                    loginBtn.textContent = 'ログイン';
+                    loading.classList.remove('show');
+                }
+            } catch (error) {
+                console.error('ログインエラー:', error);
+                showError('通信エラーが発生しました。もう一度お試しください。');
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'ログイン';
+                loading.classList.remove('show');
+            }
+        });
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.classList.add('show');
+        }
+    </script>
+</body>
+</html>

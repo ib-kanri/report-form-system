@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理者画面 - INTER BLUE 報告システム</title>
+    <style>
+        :root {
+            --primary: #1a73e8;
+            --primary-dark: #1557b0;
+            --success: #34a853;
+            --error: #ea4335;
+            --warning: #fbbc04;
+            --gray-50: #f8f9fa;
+            --gray-100: #f1f3f4;
+            --gray-200: #e8eaed;
+            --gray-700: #5f6368;
+            --gray-900: #202124;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            color: var(--gray-900);
+            background: var(--gray-50);
+            min-height: 100vh;
+        }
+
+        .header {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title h1 {
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        .header-badge {
+            background: rgba(255,255,255,0.2);
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-right: 12px;
+        }
+
+        .user-info {
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px 16px 80px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            border-bottom: 2px solid var(--gray-200);
+            overflow-x: auto;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--gray-700);
+            background: transparent;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .tab:hover {
+            color: var(--primary);
+        }
+
+        .tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .stat-card-label {
+            font-size: 14px;
+            color: var(--gray-700);
+            margin-bottom: 8px;
+        }
+
+        .stat-card-value {
+            font-size: 32px;
+            font-weight: 500;
+            color: var(--gray-900);
+        }
+
+        .stat-card-value.warning {
+            color: var(--warning);
+        }
+
+        .stat-card-value.error {
+            color: var(--error);
+        }
+
+        .section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--gray-100);
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        .filters {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+
+        .filters select,
+        .filters input {
+            height: 40px;
+            padding: 8px 12px;
+            font-size: 14px;
+            border: 1px solid var(--gray-200);
+            border-radius: 4px;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+
+        th {
+            background: var(--gray-100);
+            padding: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            text-align: left;
+            border-bottom: 2px solid var(--gray-200);
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid var(--gray-200);
+            font-size: 14px;
+        }
+
+        tr:hover {
+            background: var(--gray-50);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .badge-success {
+            background: #e6f4ea;
+            color: #1e8e3e;
+        }
+
+        .badge-warning {
+            background: #fef7e0;
+            color: #f9ab00;
+        }
+
+        .badge-error {
+            background: #fce8e6;
+            color: #c5221f;
+        }
+
+        .badge-gray {
+            background: var(--gray-100);
+            color: var(--gray-700);
+        }
+
+        .btn {
+            height: 40px;
+            padding: 8px 16px;
+            font-size: 14px;
+            font-weight: 500;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--gray-700);
+            border: 1px solid var(--gray-200);
+        }
+
+        .btn-secondary:hover {
+            background: var(--gray-50);
+        }
+
+        .btn-small {
+            height: 32px;
+            padding: 6px 12px;
+            font-size: 13px;
+        }
+
+        .alert-box {
+            background: #fef7e0;
+            border-left: 4px solid var(--warning);
+            padding: 16px;
+            border-radius: 4px;
+            margin-bottom: 16px;
+        }
+
+        .alert-box-title {
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .alert-list {
+            list-style: none;
+        }
+
+        .alert-list li {
+            padding: 4px 0;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--gray-200);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: var(--gray-700);
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 16px;
+            color: var(--primary);
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .filters {
+                flex-direction: column;
+            }
+
+            .filters select,
+            .filters input {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="header-title">
+                <h1>管理者画面</h1>
+            </div>
+            <div class="user-info">
+                <span class="header-badge">管理者</span>
+                <span id="userName"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <a href="admin-menu.html" class="back-link">← 管理者メニューに戻る</a>
+
+        <div class="tabs">
+            <button class="tab active" data-tab="dashboard">ダッシュボード</button>
+            <button class="tab" data-tab="shift">シフト管理</button>
+            <button class="tab" data-tab="unsubmitted">未提出一覧</button>
+            <button class="tab" data-tab="overtime">時間外労働</button>
+        </div>
+
+        <!-- タブ1: ダッシュボード -->
+        <div id="dashboard" class="tab-content active">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-card-label">シフト提出率</div>
+                    <div class="stat-card-value" id="shiftSubmissionRate">-%</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-label">業務報告未提出</div>
+                    <div class="stat-card-value warning" id="unsubmittedCount">-件</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-label">在籍従業員数</div>
+                    <div class="stat-card-value" id="employeeCount">-名</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-label">時間外労働超過</div>
+                    <div class="stat-card-value error" id="overtimeExceedCount">-名</div>
+                </div>
+            </div>
+
+            <div id="alertSection" style="display: none;">
+                <div class="alert-box">
+                    <div class="alert-box-title">アラート</div>
+                    <ul class="alert-list" id="alertList">
+                        <!-- 動的生成 -->
+                    </ul>
+                </div>
+            </div>
+
+            <div id="dashboardLoading" class="loading show">
+                <div class="loading-spinner"></div>
+                <p style="margin-top: 12px; color: var(--gray-700);">データ取得中...</p>
+            </div>
+        </div>
+
+        <!-- タブ2: シフト管理 -->
+        <div id="shift" class="tab-content">
+            <div class="section">
+                <div class="section-header">
+                    <h3 class="section-title">シフト提出状況</h3>
+                </div>
+
+                <div class="filters">
+                    <input type="month" id="shiftMonth" value="">
+                    <select id="shiftDepartment">
+                        <option value="">全部署</option>
+                        <option value="CS東海">CS東海</option>
+                        <option value="CS関西">CS関西</option>
+                        <option value="企画管理">企画管理</option>
+                    </select>
+                    <select id="shiftStatus">
+                        <option value="">全ステータス</option>
+                        <option value="提出済み">提出済み</option>
+                        <option value="未提出">未提出</option>
+                    </select>
+                    <button id="shiftFilterBtn" class="btn btn-primary">絞り込み</button>
+                </div>
+
+                <div id="shiftLoading" class="loading">
+                    <div class="loading-spinner"></div>
+                    <p style="margin-top: 12px; color: var(--gray-700);">データ取得中...</p>
+                </div>
+
+                <div class="table-container" id="shiftTableContainer" style="display: none;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>社員ID</th>
+                                <th>氏名</th>
+                                <th>部署</th>
+                                <th>提出状態</th>
+                                <th>提出日時</th>
+                                <th>承認状態</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="shiftTableBody">
+                            <!-- 動的生成 -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="shiftNoData" class="no-data" style="display: none;">
+                    データがありません
+                </div>
+            </div>
+        </div>
+
+        <!-- タブ3: 未提出一覧 -->
+        <div id="unsubmitted" class="tab-content">
+            <div class="section">
+                <div class="section-header">
+                    <h3 class="section-title">業務報告未提出一覧</h3>
+                    <button id="refreshUnsubmittedBtn" class="btn btn-secondary btn-small">更新</button>
+                </div>
+
+                <div id="unsubmittedLoading" class="loading">
+                    <div class="loading-spinner"></div>
+                    <p style="margin-top: 12px; color: var(--gray-700);">データ取得中...</p>
+                </div>
+
+                <div class="table-container" id="unsubmittedTableContainer" style="display: none;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>社員ID</th>
+                                <th>氏名</th>
+                                <th>対象日</th>
+                                <th>勤務終了時刻</th>
+                                <th>経過時間</th>
+                                <th>稼働先</th>
+                                <th>状態</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="unsubmittedTableBody">
+                            <!-- 動的生成 -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="unsubmittedNoData" class="no-data" style="display: none;">
+                    未提出はありません
+                </div>
+            </div>
+        </div>
+
+        <!-- タブ4: 時間外労働 -->
+        <div id="overtime" class="tab-content">
+            <div class="section">
+                <div class="section-header">
+                    <h3 class="section-title">時間外労働集計</h3>
+                </div>
+
+                <div class="filters">
+                    <input type="month" id="overtimeMonth" value="">
+                    <select id="overtimeDepartment">
+                        <option value="">全部署</option>
+                        <option value="CS東海">CS東海</option>
+                        <option value="CS関西">CS関西</option>
+                        <option value="企画管理">企画管理</option>
+                    </select>
+                    <select id="overtimeFilter">
+                        <option value="">全て表示</option>
+                        <option value="over45">45時間超過のみ</option>
+                        <option value="over80">80時間超過のみ</option>
+                    </select>
+                    <button id="overtimeFilterBtn" class="btn btn-primary">絞り込み</button>
+                </div>
+
+                <div id="overtimeLoading" class="loading">
+                    <div class="loading-spinner"></div>
+                    <p style="margin-top: 12px; color: var(--gray-700);">データ取得中...</p>
+                </div>
+
+                <div class="table-container" id="overtimeTableContainer" style="display: none;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>社員ID</th>
+                                <th>氏名</th>
+                                <th>部署</th>
+                                <th>出勤日数</th>
+                                <th>総労働時間</th>
+                                <th>所定内</th>
+                                <th>時間外</th>
+                                <th>みなし控除後</th>
+                                <th>状態</th>
+                            </tr>
+                        </thead>
+                        <tbody id="overtimeTableBody">
+                            <!-- 動的生成 -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="overtimeNoData" class="no-data" style="display: none;">
+                    データがありません
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SCRIPT_URL = 'https://interblue-proxy.k-hamada-ib.workers.dev/';
+
+        // 認証チェック
+        const employeeId = sessionStorage.getItem('employeeId');
+        const employeeName = sessionStorage.getItem('employeeName');
+        const isAdmin = sessionStorage.getItem('isAdmin');
+
+        if (!employeeId) {
+            window.location.href = 'index.html';
+        }
+
+        if (isAdmin !== 'true') {
+            alert('管理者権限がありません');
+            window.location.href = 'index.html';
+        }
+
+        document.getElementById('userName').textContent = employeeName;
+
+        // 今月を初期値に設定
+        const today = new Date();
+        const currentYearMonth = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
+        document.getElementById('shiftMonth').value = currentYearMonth;
+        document.getElementById('overtimeMonth').value = currentYearMonth;
+
+        // タブ切り替え
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                const targetTab = tab.getAttribute('data-tab');
+                
+                // タブのアクティブ切り替え
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+
+                // コンテンツの切り替え
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.remove('active');
+                });
+                document.getElementById(targetTab).classList.add('active');
+
+                // タブ初回表示時にデータ読み込み
+                if (targetTab === 'shift' && !document.getElementById('shiftTableContainer').hasAttribute('data-loaded')) {
+                    loadShiftData();
+                } else if (targetTab === 'unsubmitted' && !document.getElementById('unsubmittedTableContainer').hasAttribute('data-loaded')) {
+                    loadUnsubmittedData();
+                } else if (targetTab === 'overtime' && !document.getElementById('overtimeTableContainer').hasAttribute('data-loaded')) {
+                    loadOvertimeData();
+                }
+            });
+        });
+
+        // ダッシュボード読み込み
+        loadDashboard();
+
+        async function loadDashboard() {
+            try {
+                // 各種統計データを取得（並列実行）
+                const [shiftRes, unsubmittedRes, overtimeRes] = await Promise.all([
+                    fetch(SCRIPT_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'getShiftData', yearMonth: currentYearMonth })
+                    }),
+                    fetch(SCRIPT_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'getUnsubmittedList' })
+                    }),
+                    fetch(SCRIPT_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'getOvertimeData', yearMonth: currentYearMonth })
+                    })
+                ]);
+
+                const shiftData = await shiftRes.json();
+                const unsubmittedData = await unsubmittedRes.json();
+                const overtimeData = await overtimeRes.json();
+
+                // シフト提出率
+                if (shiftData.success && shiftData.data) {
+                    const submitted = shiftData.data.filter(d => d.submitStatus === '提出済み').length;
+                    const total = shiftData.data.length;
+                    const rate = total > 0 ? Math.round((submitted / total) * 100) : 0;
+                    document.getElementById('shiftSubmissionRate').textContent = `${rate}%`;
+                }
+
+                // 未提出件数
+                if (unsubmittedData.success && unsubmittedData.data) {
+                    document.getElementById('unsubmittedCount').textContent = `${unsubmittedData.data.length}件`;
+                }
+
+                // 在籍従業員数（シフトデータから）
+                if (shiftData.success && shiftData.data) {
+                    document.getElementById('employeeCount').textContent = `${shiftData.data.length}名`;
+                }
+
+                // 時間外労働超過人数
+                if (overtimeData.success && overtimeData.data) {
+                    const exceedCount = overtimeData.data.filter(d => d.over45).length;
+                    document.getElementById('overtimeExceedCount').textContent = `${exceedCount}名`;
+                }
+
+                // アラート生成
+                const alerts = [];
+                if (unsubmittedData.success && unsubmittedData.data.length > 0) {
+                    alerts.push(`業務報告未提出: ${unsubmittedData.data.length}件`);
+                }
+                if (overtimeData.success && overtimeData.data) {
+                    const over80 = overtimeData.data.filter(d => d.over80).length;
+                    if (over80 > 0) {
+                        alerts.push(`時間外労働80時間超過: ${over80}名`);
+                    }
+                }
+
+                if (alerts.length > 0) {
+                    const alertList = document.getElementById('alertList');
+                    alertList.innerHTML = alerts.map(alert => `<li>${alert}</li>`).join('');
+                    document.getElementById('alertSection').style.display = 'block';
+                }
+
+            } catch (error) {
+                console.error('ダッシュボードデータ取得エラー:', error);
+            } finally {
+                document.getElementById('dashboardLoading').classList.remove('show');
+            }
+        }
+
+        // シフト管理データ読み込み
+        document.getElementById('shiftFilterBtn').addEventListener('click', loadShiftData);
+
+        async function loadShiftData() {
+            const yearMonth = document.getElementById('shiftMonth').value;
+            const department = document.getElementById('shiftDepartment').value;
+            const status = document.getElementById('shiftStatus').value;
+
+            document.getElementById('shiftLoading').classList.add('show');
+            document.getElementById('shiftTableContainer').style.display = 'none';
+            document.getElementById('shiftNoData').style.display = 'none';
+
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        action: 'getShiftData', 
+                        yearMonth: yearMonth,
+                        departmentFilter: department 
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success && result.data && result.data.length > 0) {
+                    let filteredData = result.data;
+                    
+                    // ステータスフィルタ
+                    if (status) {
+                        filteredData = filteredData.filter(d => d.submitStatus === status);
+                    }
+
+                    if (filteredData.length > 0) {
+                        renderShiftTable(filteredData);
+                        document.getElementById('shiftTableContainer').style.display = 'block';
+                        document.getElementById('shiftTableContainer').setAttribute('data-loaded', 'true');
+                    } else {
+                        document.getElementById('shiftNoData').style.display = 'block';
+                    }
+                } else {
+                    document.getElementById('shiftNoData').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('シフトデータ取得エラー:', error);
+                document.getElementById('shiftNoData').style.display = 'block';
+            } finally {
+                document.getElementById('shiftLoading').classList.remove('show');
+            }
+        }
+
+        function renderShiftTable(data) {
+            const tbody = document.getElementById('shiftTableBody');
+            tbody.innerHTML = '';
+
+            data.forEach(item => {
+                const tr = document.createElement('tr');
+                
+                const statusBadge = item.submitStatus === '提出済み' ? 
+                    '<span class="badge badge-success">提出済み</span>' : 
+                    '<span class="badge badge-gray">未提出</span>';
+
+                const approvalBadge = item.approvalStatus === '承認済み' ?
+                    '<span class="badge badge-success">承認済み</span>' :
+                    '<span class="badge badge-gray">未承認</span>';
+
+                tr.innerHTML = `
+                    <td>${item.employeeId}</td>
+                    <td>${item.employeeName}</td>
+                    <td>${item.department}</td>
+                    <td>${statusBadge}</td>
+                    <td>${item.submitDate || '-'}</td>
+                    <td>${approvalBadge}</td>
+                    <td>
+                        <button class="btn btn-secondary btn-small" onclick="viewShiftDetail('${item.employeeId}')">詳細</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function viewShiftDetail(employeeId) {
+            alert(`${employeeId}のシフト詳細表示（未実装）`);
+        }
+
+        // 未提出一覧データ読み込み
+        document.getElementById('refreshUnsubmittedBtn').addEventListener('click', loadUnsubmittedData);
+
+        async function loadUnsubmittedData() {
+            document.getElementById('unsubmittedLoading').classList.add('show');
+            document.getElementById('unsubmittedTableContainer').style.display = 'none';
+            document.getElementById('unsubmittedNoData').style.display = 'none';
+
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'getUnsubmittedList' })
+                });
+
+                const result = await response.json();
+
+                if (result.success && result.data && result.data.length > 0) {
+                    renderUnsubmittedTable(result.data);
+                    document.getElementById('unsubmittedTableContainer').style.display = 'block';
+                    document.getElementById('unsubmittedTableContainer').setAttribute('data-loaded', 'true');
+                } else {
+                    document.getElementById('unsubmittedNoData').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('未提出データ取得エラー:', error);
+                document.getElementById('unsubmittedNoData').style.display = 'block';
+            } finally {
+                document.getElementById('unsubmittedLoading').classList.remove('show');
+            }
+        }
+
+        function renderUnsubmittedTable(data) {
+            const tbody = document.getElementById('unsubmittedTableBody');
+            tbody.innerHTML = '';
+
+            data.forEach(item => {
+                const tr = document.createElement('tr');
+                
+                // 経過時間で色分け
+                const elapsedHours = parseFloat(item.elapsed) || 0;
+                let statusBadge;
+                if (elapsedHours >= 2) {
+                    statusBadge = '<span class="badge badge-error">2時間以上</span>';
+                } else if (elapsedHours >= 1) {
+                    statusBadge = '<span class="badge badge-warning">1-2時間</span>';
+                } else {
+                    statusBadge = '<span class="badge badge-gray">1時間未満</span>';
+                }
+
+                tr.innerHTML = `
+                    <td>${item.employeeId}</td>
+                    <td>${item.employeeName}</td>
+                    <td>${item.date}</td>
+                    <td>${item.endTime}</td>
+                    <td>${item.elapsed}</td>
+                    <td>${item.workplace || '-'}</td>
+                    <td>${statusBadge}</td>
+                    <td>
+                        <button class="btn btn-secondary btn-small" onclick="sendReminder('${item.employeeId}')">催促</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function sendReminder(employeeId) {
+            if (confirm(`${employeeId}に催促メールを送信しますか？`)) {
+                alert('催促メール送信機能は未実装です');
+            }
+        }
+
+        // 時間外労働データ読み込み
+        document.getElementById('overtimeFilterBtn').addEventListener('click', loadOvertimeData);
+
+        async function loadOvertimeData() {
+            const yearMonth = document.getElementById('overtimeMonth').value;
+            const department = document.getElementById('overtimeDepartment').value;
+            const filter = document.getElementById('overtimeFilter').value;
+
+            document.getElementById('overtimeLoading').classList.add('show');
+            document.getElementById('overtimeTableContainer').style.display = 'none';
+            document.getElementById('overtimeNoData').style.display = 'none';
+
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'getOvertimeData', yearMonth: yearMonth })
+                });
+
+                const result = await response.json();
+
+                if (result.success && result.data && result.data.length > 0) {
+                    let filteredData = result.data;
+                    
+                    // 部署フィルタ
+                    if (department) {
+                        filteredData = filteredData.filter(d => d.department === department);
+                    }
+
+                    // 時間外フィルタ
+                    if (filter === 'over45') {
+                        filteredData = filteredData.filter(d => d.over45);
+                    } else if (filter === 'over80') {
+                        filteredData = filteredData.filter(d => d.over80);
+                    }
+
+                    if (filteredData.length > 0) {
+                        renderOvertimeTable(filteredData);
+                        document.getElementById('overtimeTableContainer').style.display = 'block';
+                        document.getElementById('overtimeTableContainer').setAttribute('data-loaded', 'true');
+                    } else {
+                        document.getElementById('overtimeNoData').style.display = 'block';
+                    }
+                } else {
+                    document.getElementById('overtimeNoData').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('時間外労働データ取得エラー:', error);
+                document.getElementById('overtimeNoData').style.display = 'block';
+            } finally {
+                document.getElementById('overtimeLoading').classList.remove('show');
+            }
+        }
+
+        function renderOvertimeTable(data) {
+            const tbody = document.getElementById('overtimeTableBody');
+            tbody.innerHTML = '';
+
+            data.forEach(item => {
+                const tr = document.createElement('tr');
+                
+                // ステータスバッジ
+                let statusBadge;
+                if (item.over80) {
+                    statusBadge = '<span class="badge badge-error">80時間超過</span>';
+                } else if (item.over45) {
+                    statusBadge = '<span class="badge badge-error">45時間超過</span>';
+                } else if (item.overtimeHours >= 40) {
+                    statusBadge = '<span class="badge badge-warning">40時間以上</span>';
+                } else {
+                    statusBadge = '<span class="badge badge-success">正常</span>';
+                }
+
+                tr.innerHTML = `
+                    <td>${item.employeeId}</td>
+                    <td>${item.employeeName}</td>
+                    <td>${item.department}</td>
+                    <td>${item.workDays}日</td>
+                    <td>${item.totalHours.toFixed(1)}h</td>
+                    <td>${item.regularHours.toFixed(1)}h</td>
+                    <td>${item.overtimeHours.toFixed(1)}h</td>
+                    <td>${item.deemOvertime.toFixed(1)}h</td>
+                    <td>${statusBadge}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+    </script>
+</body>
+</html>

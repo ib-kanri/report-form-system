@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>実績入力 - INTER BLUE 報告システム</title>
+    <style>
+        :root {
+            --primary: #1a73e8;
+            --primary-dark: #1557b0;
+            --success: #34a853;
+            --error: #ea4335;
+            --warning: #fbbc04;
+            --gray-50: #f8f9fa;
+            --gray-100: #f1f3f4;
+            --gray-200: #e8eaed;
+            --gray-700: #5f6368;
+            --gray-900: #202124;
+            --info-bg: #e3f2fd;
+            --info-text: #1976d2;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            color: var(--gray-900);
+            background: var(--gray-50);
+            min-height: 100vh;
+        }
+
+        .header {
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title h1 {
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        .user-info {
+            font-size: 14px;
+            color: var(--gray-700);
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 24px 16px 80px;
+        }
+
+        .page-title {
+            font-size: 24px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .page-subtitle {
+            font-size: 14px;
+            color: var(--gray-700);
+            margin-bottom: 24px;
+        }
+
+        .info-box {
+            background: var(--info-bg);
+            color: var(--info-text);
+            padding: 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 24px;
+        }
+
+        .info-box strong {
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .section-header {
+            font-size: 18px;
+            font-weight: 500;
+            color: var(--gray-900);
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--gray-100);
+            background: var(--gray-50);
+            padding: 12px 16px;
+            margin: -20px -20px 20px -20px;
+            border-radius: 8px 8px 0 0;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 0;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--gray-900);
+            margin-bottom: 8px;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 12px 16px;
+            font-size: 16px;
+            border: 1px solid var(--gray-200);
+            border-radius: 4px;
+            background: white;
+            transition: border-color 0.2s;
+        }
+
+        input[type="number"] {
+            height: 48px;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.1);
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        .currency-input {
+            position: relative;
+        }
+
+        .currency-input::before {
+            content: '¥';
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray-700);
+            font-size: 16px;
+        }
+
+        .currency-input input {
+            padding-left: 32px;
+        }
+
+        .error-message {
+            background: #fce8e6;
+            color: #c5221f;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 16px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .success-message {
+            background: #e6f4ea;
+            color: #1e8e3e;
+            padding: 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 16px;
+            display: none;
+            text-align: center;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        .btn {
+            width: 100%;
+            height: 48px;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: 500;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-primary:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary:disabled {
+            background: var(--gray-200);
+            color: var(--gray-700);
+            cursor: not-allowed;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--gray-200);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 600px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="header-title">
+                <h1>実績入力</h1>
+            </div>
+            <div class="user-info">
+                <span id="userName"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2 class="page-title">実績入力</h2>
+        <p class="page-subtitle">本日の実績を入力してください</p>
+
+        <div class="info-box" id="contextInfo"></div>
+
+        <div id="errorMessage" class="error-message"></div>
+        <div id="successMessage" class="success-message"></div>
+
+        <form id="performanceForm">
+            <div id="formContainer">
+                <!-- 動的生成されるフォーム -->
+            </div>
+
+            <button type="submit" id="submitBtn" class="btn btn-primary">
+                実績を保存
+            </button>
+        </form>
+
+        <div id="loading" class="loading">
+            <div class="loading-spinner"></div>
+            <p style="margin-top: 12px; color: var(--gray-700);">保存中...</p>
+        </div>
+    </div>
+
+    <script>
+        const SCRIPT_URL = 'https://interblue-proxy.k-hamada-ib.workers.dev/';
+
+        // 認証チェック
+        const employeeId = sessionStorage.getItem('employeeId');
+        const employeeName = sessionStorage.getItem('employeeName');
+
+        if (!employeeId) {
+            window.location.href = 'index.html';
+        }
+
+        document.getElementById('userName').textContent = employeeName;
+
+        // URLパラメータ取得
+        const urlParams = new URLSearchParams(window.location.search);
+        const kubun = urlParams.get('kubun');
+        const date = urlParams.get('date');
+        const workplace = sessionStorage.getItem('lastWorkplace') || '';
+
+        if (!kubun || !date) {
+            alert('不正なアクセスです');
+            window.location.href = 'menu.html';
+        }
+
+        // コンテキスト情報表示
+        document.getElementById('contextInfo').innerHTML = `
+            <strong>実績入力対象</strong>
+            稼働区分: ${kubun}<br>
+            日付: ${date}<br>
+            稼働先: ${workplace}
+        `;
+
+        // 稼働区分マスタ取得してフォーム生成
+        loadPerformanceForm();
+
+        async function loadPerformanceForm() {
+            try {
+                const response = await fetch(SCRIPT_URL + '?action=getKubunMaster');
+                const result = await response.json();
+
+                if (result.success && result.data[kubun]) {
+                    generateForm(result.data[kubun]);
+                } else {
+                    showError('稼働区分マスタの取得に失敗しました');
+                }
+            } catch (error) {
+                console.error('マスタ取得エラー:', error);
+                showError('マスタデータの取得に失敗しました');
+            }
+        }
+
+        function generateForm(fields) {
+            const container = document.getElementById('formContainer');
+            let currentSection = null;
+            let currentSectionDiv = null;
+            let currentGrid = null;
+
+            fields.forEach(field => {
+                if (field.type === 'テキスト') {
+                    // セクション見出し
+                    currentSection = document.createElement('div');
+                    currentSection.className = 'section';
+                    
+                    const header = document.createElement('div');
+                    header.className = 'section-header';
+                    header.textContent = field.name;
+                    currentSection.appendChild(header);
+
+                    currentGrid = document.createElement('div');
+                    currentGrid.className = 'form-grid';
+                    currentSection.appendChild(currentGrid);
+
+                    container.appendChild(currentSection);
+
+                } else if (field.type === '数値') {
+                    // 数値入力フィールド
+                    const formGroup = document.createElement('div');
+                    formGroup.className = 'form-group';
+
+                    const label = document.createElement('label');
+                    label.textContent = field.name;
+                    label.setAttribute('for', field.id);
+
+                    const input = document.createElement('input');
+                    input.type = 'number';
+                    input.id = field.id;
+                    input.name = field.id;
+                    input.min = '0';
+                    input.value = field.default || '0';
+
+                    formGroup.appendChild(label);
+                    formGroup.appendChild(input);
+
+                    if (currentGrid) {
+                        currentGrid.appendChild(formGroup);
+                    }
+
+                } else if (field.type === '金額') {
+                    // 金額入力フィールド
+                    const formGroup = document.createElement('div');
+                    formGroup.className = 'form-group';
+
+                    const label = document.createElement('label');
+                    label.textContent = field.name;
+                    label.setAttribute('for', field.id);
+
+                    const currencyDiv = document.createElement('div');
+                    currencyDiv.className = 'currency-input';
+
+                    const input = document.createElement('input');
+                    input.type = 'number';
+                    input.id = field.id;
+                    input.name = field.id;
+                    input.min = '0';
+                    input.value = field.default || '0';
+
+                    currencyDiv.appendChild(input);
+                    formGroup.appendChild(label);
+                    formGroup.appendChild(currencyDiv);
+
+                    if (currentGrid) {
+                        currentGrid.appendChild(formGroup);
+                    }
+
+                } else if (field.type === 'テキスト入力') {
+                    // テキストエリア
+                    const formGroup = document.createElement('div');
+                    formGroup.className = 'form-group full-width';
+
+                    const label = document.createElement('label');
+                    label.textContent = field.name;
+                    label.setAttribute('for', field.id);
+
+                    const textarea = document.createElement('textarea');
+                    textarea.id = field.id;
+                    textarea.name = field.id;
+                    textarea.placeholder = field.name + 'を入力してください';
+
+                    formGroup.appendChild(label);
+                    formGroup.appendChild(textarea);
+
+                    if (currentGrid) {
+                        currentGrid.appendChild(formGroup);
+                    }
+                }
+            });
+        }
+
+        // フォーム送信
+        document.getElementById('performanceForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // フォームデータ収集
+            const formData = new FormData(e.target);
+            const items = {};
+
+            for (let [key, value] of formData.entries()) {
+                items[key] = value;
+            }
+
+            const data = {
+                kubun: kubun,
+                employeeId: employeeId,
+                employeeName: employeeName,
+                date: date,
+                workplace: workplace,
+                items: items
+            };
+
+            // ローディング開始
+            document.getElementById('submitBtn').disabled = true;
+            document.getElementById('loading').classList.add('show');
+            document.getElementById('errorMessage').classList.remove('show');
+            document.getElementById('successMessage').classList.remove('show');
+
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'savePerformance',
+                        data: data
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    // 成功メッセージ表示
+                    showSuccess('業務報告と実績を保存しました');
+
+                    // 2秒後にmenu.htmlへ自動遷移
+                    setTimeout(() => {
+                        window.location.href = 'menu.html';
+                    }, 2000);
+                } else {
+                    showError(result.message || '保存に失敗しました');
+                    document.getElementById('submitBtn').disabled = false;
+                    document.getElementById('loading').classList.remove('show');
+                }
+            } catch (error) {
+                console.error('送信エラー:', error);
+                showError('通信エラーが発生しました。もう一度お試しください。');
+                document.getElementById('submitBtn').disabled = false;
+                document.getElementById('loading').classList.remove('show');
+            }
+        });
+
+        function showError(message) {
+            const errorElement = document.getElementById('errorMessage');
+            errorElement.textContent = message;
+            errorElement.classList.add('show');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function showSuccess(message) {
+            const successElement = document.getElementById('successMessage');
+            successElement.textContent = message;
+            successElement.classList.add('show');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
