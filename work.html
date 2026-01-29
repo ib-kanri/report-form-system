@@ -16,8 +16,6 @@
             --gray-200: #e8eaed;
             --gray-700: #5f6368;
             --gray-900: #202124;
-            --info-bg: #e3f2fd;
-            --info-text: #1976d2;
         }
 
         * {
@@ -97,15 +95,6 @@
             border-bottom: 2px solid var(--gray-100);
         }
 
-        .info-box {
-            background: var(--info-bg);
-            color: var(--info-text);
-            padding: 12px 16px;
-            border-radius: 8px;
-            font-size: 14px;
-            margin-bottom: 16px;
-        }
-
         .form-group {
             margin-bottom: 20px;
         }
@@ -130,13 +119,32 @@
             border: 1px solid var(--gray-200);
             border-radius: 4px;
             background: white;
-            transition: border-color 0.2s;
+            transition: all 0.2s;
+        }
+
+        input.error, select.error, textarea.error {
+            border-color: var(--error);
+            border-width: 2px;
+            background: #fff5f5;
+        }
+
+        .error-text {
+            color: var(--error);
+            font-size: 13px;
+            margin-top: 4px;
+            display: none;
+            font-weight: 500;
+        }
+
+        .error-text.show {
+            display: block;
         }
 
         input[type="date"],
         input[type="time"],
         input[type="number"],
         input[type="text"],
+        input[type="month"],
         select {
             height: 48px;
         }
@@ -323,6 +331,7 @@
                 <div class="form-group">
                     <label for="date">報告日付<span class="required">*</span></label>
                     <input type="date" id="date" name="date" required>
+                    <div class="error-text" id="date-error">報告日付を選択してください</div>
                 </div>
 
                 <div class="form-group">
@@ -335,20 +344,18 @@
                     <input type="text" id="employeeName" name="employeeName" readonly>
                 </div>
 
-                <div class="info-box" id="defaultInfo"></div>
-
                 <div class="form-group">
                     <label for="kubun">稼働区分<span class="required">*</span></label>
                     <select id="kubun" name="kubun" required>
                         <option value="">選択してください</option>
                     </select>
+                    <div class="error-text" id="kubun-error">稼働区分を選択してください</div>
                 </div>
 
                 <div class="form-group">
                     <label for="workplace">稼働先<span class="required">*</span></label>
-                    <select id="workplace" name="workplace" required>
-                        <option value="">選択してください</option>
-                    </select>
+                    <input type="text" id="workplace" name="workplace" required placeholder="稼働先を入力してください">
+                    <div class="error-text" id="workplace-error">稼働先を入力してください</div>
                 </div>
             </div>
 
@@ -360,17 +367,20 @@
                     <div class="form-group">
                         <label for="startTime">開始時刻<span class="required">*</span></label>
                         <input type="time" id="startTime" name="startTime" required>
+                        <div class="error-text" id="startTime-error">開始時刻を入力してください</div>
                     </div>
 
                     <div class="form-group">
                         <label for="endTime">終了時刻<span class="required">*</span></label>
                         <input type="time" id="endTime" name="endTime" required>
+                        <div class="error-text" id="endTime-error">終了時刻を入力してください</div>
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label for="breakTime">休憩時間（分）<span class="required">*</span></label>
-                    <input type="number" id="breakTime" name="breakTime" min="0" value="60" required>
+                    <input type="number" id="breakTime" name="breakTime" min="0" required>
+                    <div class="error-text" id="breakTime-error">休憩時間を半角数字で入力してください</div>
                     <span class="calc-result" id="actualWorkTime">実働時間: -</span>
                 </div>
 
@@ -382,6 +392,7 @@
                     <div class="form-group">
                         <label for="lateTime">遅刻時間（分）<span class="required">*</span></label>
                         <input type="number" id="lateTime" name="lateTime" min="0">
+                        <div class="error-text" id="lateTime-error">遅刻時間を半角数字で入力してください</div>
                     </div>
                 </div>
 
@@ -393,6 +404,7 @@
                     <div class="form-group">
                         <label for="earlyTime">早退時刻<span class="required">*</span></label>
                         <input type="time" id="earlyTime" name="earlyTime">
+                        <div class="error-text" id="earlyTime-error">早退時刻を入力してください</div>
                     </div>
                 </div>
             </div>
@@ -409,6 +421,7 @@
                 <div class="form-group">
                     <label for="transportCost">交通費（円）</label>
                     <input type="number" id="transportCost" name="transportCost" min="0" placeholder="0">
+                    <div class="error-text" id="transportCost-error">交通費は半角数字で入力してください</div>
                 </div>
 
                 <div class="checkbox-group">
@@ -419,16 +432,19 @@
                     <div class="form-group">
                         <label for="teikiSection">定期区間<span class="required">*</span></label>
                         <input type="text" id="teikiSection" name="teikiSection" placeholder="例: 名古屋駅 ⇔ 栄駅">
+                        <div class="error-text" id="teikiSection-error">定期区間を入力してください</div>
                     </div>
 
                     <div class="form-group">
                         <label for="teikiMonth">定期購入月<span class="required">*</span></label>
                         <input type="month" id="teikiMonth" name="teikiMonth">
+                        <div class="error-text" id="teikiMonth-error">定期購入月を選択してください</div>
                     </div>
 
                     <div class="form-group">
                         <label for="teikiCost">定期代（円）<span class="required">*</span></label>
                         <input type="number" id="teikiCost" name="teikiCost" min="0">
+                        <div class="error-text" id="teikiCost-error">定期代を半角数字で入力してください</div>
                     </div>
                 </div>
 
@@ -484,22 +500,25 @@
         document.getElementById('employeeName').value = employeeName;
         document.getElementById('date').valueAsDate = new Date();
 
-        // デフォルト値表示
-        if (defaultKubun && defaultWorkplace) {
-            document.getElementById('defaultInfo').textContent = 
-                `デフォルト値: ${defaultKubun} / ${defaultWorkplace}`;
+        // デフォルト値設定（時刻を10:00, 19:00に変更、休憩60分）
+        document.getElementById('startTime').value = '10:00';
+        document.getElementById('endTime').value = '19:00';
+        document.getElementById('breakTime').value = '60';
+
+        // 稼働先のデフォルト値設定（テキストボックス）
+        if (defaultWorkplace) {
+            document.getElementById('workplace').value = defaultWorkplace;
         }
 
-        // 稼働区分・稼働先マスタ取得
-        loadMasterData();
+        // 稼働区分マスタ取得
+        loadKubunMaster();
 
-        async function loadMasterData() {
+        async function loadKubunMaster() {
             try {
                 const response = await fetch(SCRIPT_URL + '?action=getKubunMaster');
                 const result = await response.json();
 
                 if (result.success) {
-                    // 稼働区分セット
                     const kubunSelect = document.getElementById('kubun');
                     Object.keys(result.data).forEach(kubun => {
                         const option = document.createElement('option');
@@ -510,35 +529,88 @@
                         }
                         kubunSelect.appendChild(option);
                     });
-
-                    // 稼働先マスタ取得
-                    const workplaceResponse = await fetch(SCRIPT_URL + '?action=getWorkplaceMaster');
-                    const workplaceResult = await workplaceResponse.json();
-
-                    if (workplaceResult.success) {
-                        const workplaceSelect = document.getElementById('workplace');
-                        workplaceResult.data.forEach(workplace => {
-                            const option = document.createElement('option');
-                            option.value = workplace;
-                            option.textContent = workplace;
-                            if (workplace === defaultWorkplace) {
-                                option.selected = true;
-                            }
-                            workplaceSelect.appendChild(option);
-                        });
-                    }
                 }
             } catch (error) {
                 console.error('マスタ取得エラー:', error);
-                showError('マスタデータの取得に失敗しました');
             }
         }
+
+        // 全角数字を半角に変換
+        function toHalfWidth(str) {
+            return str.replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0));
+        }
+
+        // 数値バリデーション
+        function validateNumber(input) {
+            if (!input.value) return true;
+            
+            // 全角を半角に変換
+            input.value = toHalfWidth(input.value);
+            
+            // 数値チェック
+            const num = parseFloat(input.value);
+            if (isNaN(num) || num < 0) {
+                return false;
+            }
+            return true;
+        }
+
+        // フィールドバリデーション
+        function validateField(field) {
+            const errorText = document.getElementById(field.id + '-error');
+            if (!errorText) return true;
+
+            let isValid = true;
+            let errorMessage = '';
+
+            // 必須チェック
+            if (field.hasAttribute('required') && !field.value.trim()) {
+                isValid = false;
+                errorMessage = field.labels[0].textContent.replace('*', '') + 'を入力してください';
+            }
+
+            // 数値チェック
+            if (field.type === 'number' && field.value) {
+                if (!validateNumber(field)) {
+                    isValid = false;
+                    errorMessage = field.labels[0].textContent.replace('*', '') + 'は半角数字で入力してください';
+                }
+            }
+
+            // エラー表示
+            if (isValid) {
+                field.classList.remove('error');
+                errorText.classList.remove('show');
+            } else {
+                field.classList.add('error');
+                errorText.textContent = errorMessage;
+                errorText.classList.add('show');
+            }
+
+            return isValid;
+        }
+
+        // すべての数値入力フィールドにバリデーション追加
+        ['breakTime', 'lateTime', 'transportCost', 'teikiCost'].forEach(id => {
+            const field = document.getElementById(id);
+            if (field) {
+                field.addEventListener('input', () => validateField(field));
+                field.addEventListener('blur', () => validateField(field));
+            }
+        });
+
+        // すべての必須フィールドにバリデーション追加
+        document.querySelectorAll('[required]').forEach(field => {
+            field.addEventListener('blur', () => validateField(field));
+        });
 
         // 条件付きフィールドの表示制御
         document.getElementById('lateFlag').addEventListener('change', (e) => {
             document.getElementById('lateField').style.display = e.target.checked ? 'block' : 'none';
             if (!e.target.checked) {
                 document.getElementById('lateTime').value = '';
+                document.getElementById('lateTime').classList.remove('error');
+                document.getElementById('lateTime-error').classList.remove('show');
             }
         });
 
@@ -546,6 +618,8 @@
             document.getElementById('earlyField').style.display = e.target.checked ? 'block' : 'none';
             if (!e.target.checked) {
                 document.getElementById('earlyTime').value = '';
+                document.getElementById('earlyTime').classList.remove('error');
+                document.getElementById('earlyTime-error').classList.remove('show');
             }
         });
 
@@ -555,6 +629,10 @@
                 document.getElementById('teikiSection').value = '';
                 document.getElementById('teikiMonth').value = '';
                 document.getElementById('teikiCost').value = '';
+                ['teikiSection', 'teikiMonth', 'teikiCost'].forEach(id => {
+                    document.getElementById(id).classList.remove('error');
+                    document.getElementById(id + '-error').classList.remove('show');
+                });
             }
         });
 
@@ -571,12 +649,10 @@
                 return;
             }
 
-            // 時刻差分計算（分単位）
             const [startHour, startMin] = startTime.split(':').map(Number);
             const [endHour, endMin] = endTime.split(':').map(Number);
             const totalMinutes = (endHour * 60 + endMin) - (startHour * 60 + startMin);
             
-            // 早退時間計算
             let earlyMinutes = 0;
             if (document.getElementById('earlyFlag').checked) {
                 const earlyTime = document.getElementById('earlyTime').value;
@@ -586,7 +662,6 @@
                 }
             }
 
-            // 実働時間 = 総時間 - 休憩 - 遅刻 - 早退
             const actualMinutes = totalMinutes - breakTime - lateTime - earlyMinutes;
             const actualHours = (actualMinutes / 60).toFixed(2);
 
@@ -594,13 +669,15 @@
                 `実働時間: ${actualHours}時間`;
         }
 
-        // 実働時間の自動計算
         ['startTime', 'endTime', 'breakTime', 'lateTime', 'earlyTime'].forEach(id => {
             const element = document.getElementById(id);
             if (element) {
                 element.addEventListener('input', calculateWorkTime);
             }
         });
+
+        // 初回計算
+        calculateWorkTime();
 
         // キャンセルボタン
         document.getElementById('cancelBtn').addEventListener('click', () => {
@@ -613,30 +690,46 @@
         document.getElementById('workForm').addEventListener('submit', async (e) => {
             e.preventDefault();
 
-            // バリデーション
-            const lateFlag = document.getElementById('lateFlag').checked;
-            const lateTime = document.getElementById('lateTime').value;
-            if (lateFlag && !lateTime) {
-                showError('遅刻ありの場合、遅刻時間を入力してください');
-                return;
-            }
-
-            const earlyFlag = document.getElementById('earlyFlag').checked;
-            const earlyTime = document.getElementById('earlyTime').value;
-            if (earlyFlag && !earlyTime) {
-                showError('早退ありの場合、早退時刻を入力してください');
-                return;
-            }
-
-            const teikiFlag = document.getElementById('teikiFlag').checked;
-            if (teikiFlag) {
-                const teikiSection = document.getElementById('teikiSection').value;
-                const teikiMonth = document.getElementById('teikiMonth').value;
-                const teikiCost = document.getElementById('teikiCost').value;
-                if (!teikiSection || !teikiMonth || !teikiCost) {
-                    showError('定期利用の場合、定期区間・購入月・定期代を入力してください');
-                    return;
+            // 全フィールドバリデーション
+            let isValid = true;
+            const requiredFields = ['date', 'kubun', 'workplace', 'startTime', 'endTime', 'breakTime'];
+            
+            requiredFields.forEach(id => {
+                const field = document.getElementById(id);
+                if (!validateField(field)) {
+                    isValid = false;
                 }
+            });
+
+            // 条件付き必須チェック
+            if (document.getElementById('lateFlag').checked) {
+                if (!validateField(document.getElementById('lateTime'))) {
+                    isValid = false;
+                }
+            }
+
+            if (document.getElementById('earlyFlag').checked) {
+                if (!validateField(document.getElementById('earlyTime'))) {
+                    isValid = false;
+                }
+            }
+
+            if (document.getElementById('teikiFlag').checked) {
+                ['teikiSection', 'teikiMonth', 'teikiCost'].forEach(id => {
+                    if (!validateField(document.getElementById(id))) {
+                        isValid = false;
+                    }
+                });
+            }
+
+            if (!isValid) {
+                showError('入力内容に不備があります。赤枠の項目を確認してください。');
+                // 最初のエラーフィールドにスクロール
+                const firstError = document.querySelector('.error');
+                if (firstError) {
+                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+                return;
             }
 
             // 位置情報取得
@@ -662,7 +755,10 @@
             const startTime = document.getElementById('startTime').value;
             const endTime = document.getElementById('endTime').value;
             const breakTime = parseInt(document.getElementById('breakTime').value) || 0;
+            const lateFlag = document.getElementById('lateFlag').checked;
             const lateMinutes = lateFlag ? (parseInt(document.getElementById('lateTime').value) || 0) : 0;
+            const earlyFlag = document.getElementById('earlyFlag').checked;
+            const earlyTime = document.getElementById('earlyTime').value;
             
             let earlyMinutes = 0;
             if (earlyFlag && earlyTime) {
@@ -697,7 +793,7 @@
                 overtimeHours: overtimeHours.toFixed(2),
                 route: document.getElementById('route').value,
                 transportCost: document.getElementById('transportCost').value || 0,
-                teikiFlag: teikiFlag,
+                teikiFlag: document.getElementById('teikiFlag').checked,
                 teikiSection: document.getElementById('teikiSection').value,
                 teikiMonth: document.getElementById('teikiMonth').value,
                 teikiCost: document.getElementById('teikiCost').value || 0,
@@ -730,12 +826,10 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    // sessionStorageに保存
                     sessionStorage.setItem('lastKubun', data.kubun);
                     sessionStorage.setItem('lastDate', data.date);
                     sessionStorage.setItem('lastWorkplace', data.workplace);
 
-                    // performance.htmlへ自動遷移
                     window.location.href = `performance.html?kubun=${encodeURIComponent(data.kubun)}&date=${data.date}`;
                 } else {
                     showError(result.message || '送信に失敗しました');
