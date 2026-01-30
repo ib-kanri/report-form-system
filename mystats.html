@@ -78,6 +78,16 @@
             margin-bottom: 24px;
         }
 
+        .info-badge {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+
         .month-selector {
             background: white;
             border-radius: 8px;
@@ -117,7 +127,7 @@
 
         .summary-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 16px;
             margin-bottom: 24px;
         }
@@ -139,7 +149,7 @@
             font-size: 32px;
             font-weight: 500;
             color: var(--gray-900);
-            margin-bottom: 4px;
+            margin-bottom: 8px;
         }
 
         .summary-card-change {
@@ -184,25 +194,45 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            min-width: 800px;
+            min-width: 900px;
         }
 
         th {
             background: var(--gray-100);
-            padding: 12px;
-            font-size: 14px;
+            padding: 12px 8px;
+            font-size: 13px;
             font-weight: 500;
-            text-align: left;
+            text-align: right;
             border-bottom: 2px solid var(--gray-200);
+            white-space: nowrap;
+        }
+
+        th:first-child {
+            text-align: left;
+            min-width: 150px;
         }
 
         td {
-            padding: 12px;
+            padding: 12px 8px;
             border-bottom: 1px solid var(--gray-200);
             font-size: 14px;
+            text-align: right;
         }
 
-        tr:hover {
+        td:first-child {
+            text-align: left;
+            font-weight: 500;
+        }
+
+        tr.section-header td {
+            background: var(--gray-50);
+            font-weight: 600;
+            color: var(--gray-900);
+            font-size: 15px;
+            padding: 16px 8px 8px;
+        }
+
+        tr:hover:not(.section-header) {
             background: var(--gray-50);
         }
 
@@ -271,6 +301,18 @@
             text-align: center;
         }
 
+        .positive {
+            color: var(--success);
+        }
+
+        .negative {
+            color: var(--error);
+        }
+
+        .neutral {
+            color: var(--gray-700);
+        }
+
         @media (max-width: 768px) {
             .summary-grid {
                 grid-template-columns: 1fr;
@@ -292,7 +334,9 @@
 
     <div class="container">
         <h2 class="page-title">自分の実績</h2>
-        <p class="page-subtitle">個人の実績データを確認できます</p>
+        <p class="page-subtitle">先月比・稼働区分平均との比較</p>
+
+        <div id="kubunBadge" class="info-badge" style="display: none;"></div>
 
         <div class="month-selector">
             <div class="month-selector-row">
@@ -324,8 +368,10 @@
                                 <th>今月</th>
                                 <th>先月</th>
                                 <th>増減</th>
-                                <th>平均</th>
-                                <th>平均比</th>
+                                <th>増減率</th>
+                                <th>区分平均</th>
+                                <th>平均差</th>
+                                <th>平均差率</th>
                             </tr>
                         </thead>
                         <tbody id="detailsBody">
@@ -381,6 +427,7 @@
             document.getElementById('contentArea').style.display = 'none';
             document.getElementById('noDataArea').style.display = 'none';
             document.getElementById('errorMessage').classList.remove('show');
+            document.getElementById('kubunBadge').style.display = 'none';
 
             try {
                 const response = await fetch(SCRIPT_URL, {
@@ -412,75 +459,86 @@
         }
 
         function renderStats(data) {
-            // サマリーカード生成
+            // 稼働区分バッジ表示
+            const kubunBadge = document.getElementById('kubunBadge');
+            kubunBadge.textContent = data.kubun;
+            kubunBadge.style.display = 'inline-block';
+
+            // サマリーカード生成（出勤日数のみ）
             const summaryGrid = document.getElementById('summaryGrid');
             summaryGrid.innerHTML = '';
 
-            const currentMonth = data.currentMonth || {};
-            const lastMonth = data.lastMonth || {};
-            const average = data.average || {};
+            const currentWorkDays = data.currentMonth.workDays || 0;
+            const lastWorkDays = data.lastMonth.workDays || 0;
+            const avgWorkDays = data.kubunAverage.workDays || 0;
 
-            // 主要4項目のサマリー表示（例）
-            const summaryItems = [
-                { label: '出勤日数', key: 'workDays', suffix: '日' },
-                { label: '総労働時間', key: 'totalHours', suffix: '時間' },
-                { label: '実績合計', key: 'totalPerformance', suffix: '件' },
-                { label: '達成率', key: 'achievementRate', suffix: '%' }
-            ];
+            const workDaysDiff = currentWorkDays - lastWorkDays;
+            const workDaysAvgDiff = currentWorkDays - avgWorkDays;
 
-            summaryItems.forEach(item => {
-                const currentValue = currentMonth[item.key] || 0;
-                const lastValue = lastMonth[item.key] || 0;
-                const diff = currentValue - lastValue;
-                const changeClass = diff > 0 ? 'positive' : diff < 0 ? 'negative' : 'neutral';
-                const changeSymbol = diff > 0 ? '▲' : diff < 0 ? '▼' : '－';
-
-                const card = document.createElement('div');
-                card.className = 'summary-card';
-                card.innerHTML = `
-                    <div class="summary-card-label">${item.label}</div>
-                    <div class="summary-card-value">${currentValue.toLocaleString()}${item.suffix}</div>
-                    <div class="summary-card-change ${changeClass}">
-                        ${changeSymbol} ${Math.abs(diff).toLocaleString()} (先月比)
-                    </div>
-                `;
-                summaryGrid.appendChild(card);
-            });
+            // 出勤日数カード
+            const card = document.createElement('div');
+            card.className = 'summary-card';
+            card.innerHTML = `
+                <div class="summary-card-label">出勤日数</div>
+                <div class="summary-card-value">${currentWorkDays}日</div>
+                <div class="summary-card-change ${workDaysDiff > 0 ? 'positive' : workDaysDiff < 0 ? 'negative' : 'neutral'}">
+                    ${workDaysDiff > 0 ? '▲' : workDaysDiff < 0 ? '▼' : '－'} ${Math.abs(workDaysDiff)}日 (先月比)
+                </div>
+                <div class="summary-card-change ${workDaysAvgDiff > 0 ? 'positive' : workDaysAvgDiff < 0 ? 'negative' : 'neutral'}" style="margin-top: 4px;">
+                    平均 ${avgWorkDays.toFixed(1)}日 / ${workDaysAvgDiff > 0 ? '+' : ''}${workDaysAvgDiff.toFixed(1)}日
+                </div>
+            `;
+            summaryGrid.appendChild(card);
 
             // 詳細テーブル生成
             const tbody = document.getElementById('detailsBody');
             tbody.innerHTML = '';
 
-            // currentMonthの全項目を表示
-            Object.keys(currentMonth).forEach(key => {
-                if (summaryItems.some(item => item.key === key)) return; // サマリーに表示済みはスキップ
+            const kubunMaster = data.kubunMaster || [];
+            const currentItems = data.currentMonth.items || {};
+            const lastItems = data.lastMonth.items || {};
+            const avgItems = data.kubunAverage.items || {};
 
-                const currentValue = currentMonth[key] || 0;
-                const lastValue = lastMonth[key] || 0;
-                const avgValue = average[key] || 0;
-                const diff = currentValue - lastValue;
-                const avgDiff = currentValue - avgValue;
+            kubunMaster.forEach(field => {
+                if (field.type === 'テキスト') {
+                    // セクションヘッダー
+                    const tr = document.createElement('tr');
+                    tr.className = 'section-header';
+                    tr.innerHTML = `<td colspan="8">■ ${field.name}</td>`;
+                    tbody.appendChild(tr);
+                } else if (field.type === '数値') {
+                    // 数値項目
+                    const currentValue = currentItems[field.name] || 0;
+                    const lastValue = lastItems[field.name] || 0;
+                    const avgValue = avgItems[field.name] || 0;
 
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${key}</td>
-                    <td>${currentValue.toLocaleString()}</td>
-                    <td>${lastValue.toLocaleString()}</td>
-                    <td style="color: ${diff > 0 ? 'var(--success)' : diff < 0 ? 'var(--error)' : 'var(--gray-700)'}">
-                        ${diff > 0 ? '+' : ''}${diff.toLocaleString()}
-                    </td>
-                    <td>${avgValue.toLocaleString()}</td>
-                    <td style="color: ${avgDiff > 0 ? 'var(--success)' : avgDiff < 0 ? 'var(--error)' : 'var(--gray-700)'}">
-                        ${avgDiff > 0 ? '+' : ''}${avgDiff.toLocaleString()}
-                    </td>
-                `;
-                tbody.appendChild(tr);
+                    const diff = currentValue - lastValue;
+                    const diffRate = lastValue > 0 ? ((diff / lastValue) * 100) : (currentValue > 0 ? 999 : 0);
+                    const avgDiff = currentValue - avgValue;
+                    const avgDiffRate = avgValue > 0 ? ((avgDiff / avgValue) * 100) : (currentValue > 0 ? 999 : 0);
+
+                    const diffClass = diff > 0 ? 'positive' : diff < 0 ? 'negative' : 'neutral';
+                    const avgDiffClass = avgDiff > 0 ? 'positive' : avgDiff < 0 ? 'negative' : 'neutral';
+
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${field.name}</td>
+                        <td>${currentValue.toLocaleString()}</td>
+                        <td>${lastValue.toLocaleString()}</td>
+                        <td class="${diffClass}">${diff > 0 ? '+' : ''}${diff.toLocaleString()}</td>
+                        <td class="${diffClass}">${diffRate === 999 ? '-' : (diff > 0 ? '+' : '') + diffRate.toFixed(1) + '%'}</td>
+                        <td>${avgValue.toFixed(1)}</td>
+                        <td class="${avgDiffClass}">${avgDiff > 0 ? '+' : ''}${avgDiff.toFixed(1)}</td>
+                        <td class="${avgDiffClass}">${avgDiffRate === 999 ? '-' : (avgDiff > 0 ? '+' : '') + avgDiffRate.toFixed(1) + '%'}</td>
+                    `;
+                    tbody.appendChild(tr);
+                }
             });
 
             // データがない場合
-            if (Object.keys(currentMonth).length === 0) {
+            if (kubunMaster.filter(f => f.type === '数値').length === 0) {
                 const tr = document.createElement('tr');
-                tr.innerHTML = '<td colspan="6" style="text-align: center; color: var(--gray-700);">データがありません</td>';
+                tr.innerHTML = '<td colspan="8" style="text-align: center; color: var(--gray-700);">データがありません</td>';
                 tbody.appendChild(tr);
             }
         }
