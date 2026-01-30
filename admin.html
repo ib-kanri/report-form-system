@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>管理者画面 - INTER BLUE 報告システム</title>
+    <title>管理者ダッシュボード - INTER BLUE</title>
     <style>
         :root {
             --primary: #1a73e8;
@@ -68,6 +68,22 @@
             font-size: 14px;
             display: flex;
             align-items: center;
+            gap: 12px;
+        }
+
+        .btn-logout {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        .btn-logout:hover {
+            background: rgba(255,255,255,0.3);
         }
 
         .container {
@@ -114,38 +130,40 @@
             display: block;
         }
 
-        .stats-grid {
+        .kpi-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 16px;
             margin-bottom: 24px;
         }
 
-        .stat-card {
+        .kpi-card {
             background: white;
             border-radius: 8px;
             padding: 20px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
 
-        .stat-card-label {
+        .kpi-label {
             font-size: 14px;
             color: var(--gray-700);
             margin-bottom: 8px;
         }
 
-        .stat-card-value {
+        .kpi-value {
             font-size: 32px;
             font-weight: 500;
             color: var(--gray-900);
         }
 
-        .stat-card-value.warning {
-            color: var(--warning);
+        .kpi-value.large {
+            font-size: 28px;
         }
 
-        .stat-card-value.error {
-            color: var(--error);
+        .kpi-sub {
+            font-size: 14px;
+            color: var(--gray-700);
+            margin-top: 4px;
         }
 
         .section {
@@ -174,77 +192,30 @@
             display: flex;
             gap: 12px;
             flex-wrap: wrap;
-            margin-bottom: 16px;
+            align-items: center;
         }
 
-        .filters select,
-        .filters input {
-            height: 40px;
-            padding: 8px 12px;
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .filter-group label {
             font-size: 14px;
+            color: var(--gray-700);
+            white-space: nowrap;
+        }
+
+        select, input[type="month"], input[type="date"] {
+            padding: 8px 12px;
             border: 1px solid var(--gray-200);
             border-radius: 4px;
-        }
-
-        .table-container {
-            overflow-x: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            min-width: 800px;
-        }
-
-        th {
-            background: var(--gray-100);
-            padding: 12px;
             font-size: 14px;
-            font-weight: 500;
-            text-align: left;
-            border-bottom: 2px solid var(--gray-200);
-        }
-
-        td {
-            padding: 12px;
-            border-bottom: 1px solid var(--gray-200);
-            font-size: 14px;
-        }
-
-        tr:hover {
-            background: var(--gray-50);
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 500;
-        }
-
-        .badge-success {
-            background: #e6f4ea;
-            color: #1e8e3e;
-        }
-
-        .badge-warning {
-            background: #fef7e0;
-            color: #f9ab00;
-        }
-
-        .badge-error {
-            background: #fce8e6;
-            color: #c5221f;
-        }
-
-        .badge-gray {
-            background: var(--gray-100);
-            color: var(--gray-700);
+            background: white;
         }
 
         .btn {
-            height: 40px;
             padding: 8px 16px;
             font-size: 14px;
             font-weight: 500;
@@ -273,31 +244,79 @@
             background: var(--gray-50);
         }
 
-        .btn-small {
-            height: 32px;
-            padding: 6px 12px;
-            font-size: 13px;
+        .table-container {
+            overflow-x: auto;
         }
 
-        .alert-box {
-            background: #fef7e0;
-            border-left: 4px solid var(--warning);
-            padding: 16px;
-            border-radius: 4px;
-            margin-bottom: 16px;
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
         }
 
-        .alert-box-title {
+        th {
+            background: var(--gray-100);
+            padding: 12px;
+            font-size: 14px;
             font-weight: 500;
-            margin-bottom: 8px;
+            text-align: left;
+            border-bottom: 2px solid var(--gray-200);
+            white-space: nowrap;
         }
 
-        .alert-list {
-            list-style: none;
+        td {
+            padding: 12px;
+            border-bottom: 1px solid var(--gray-200);
+            font-size: 14px;
         }
 
-        .alert-list li {
-            padding: 4px 0;
+        tr:hover {
+            background: var(--gray-50);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .badge-success {
+            background: #e6f4ea;
+            color: #1e8e3e;
+        }
+
+        .badge-warning {
+            background: #fef7e0;
+            color: #f9ab00;
+        }
+
+        .badge-error {
+            background: #fce8e6;
+            color: #c5221f;
+        }
+
+        .badge-danger {
+            background: #9a0007;
+            color: white;
+        }
+
+        .status-normal {
+            color: var(--success);
+        }
+
+        .status-warning {
+            color: var(--warning);
+        }
+
+        .status-error {
+            color: var(--error);
+        }
+
+        .status-danger {
+            color: #9a0007;
+            font-weight: 600;
         }
 
         .loading {
@@ -330,30 +349,31 @@
             color: var(--gray-700);
         }
 
-        .back-link {
-            display: inline-block;
-            margin-bottom: 16px;
-            color: var(--primary);
-            text-decoration: none;
-            font-size: 14px;
+        .alert-list {
+            list-style: none;
         }
 
-        .back-link:hover {
-            text-decoration: underline;
+        .alert-item {
+            padding: 12px;
+            border-left: 4px solid var(--error);
+            background: #fef7e0;
+            margin-bottom: 8px;
+            border-radius: 4px;
+        }
+
+        .alert-item.critical {
+            border-left-color: var(--error);
+            background: #fce8e6;
         }
 
         @media (max-width: 768px) {
-            .stats-grid {
+            .kpi-grid {
                 grid-template-columns: 1fr;
             }
 
             .filters {
                 flex-direction: column;
-            }
-
-            .filters select,
-            .filters input {
-                width: 100%;
+                align-items: stretch;
             }
         }
     </style>
@@ -362,204 +382,254 @@
     <div class="header">
         <div class="header-content">
             <div class="header-title">
-                <h1>管理者画面</h1>
+                <h1>管理者ダッシュボード</h1>
             </div>
             <div class="user-info">
                 <span class="header-badge">管理者</span>
                 <span id="userName"></span>
+                <button id="logoutBtn" class="btn-logout">ログアウト</button>
             </div>
         </div>
     </div>
 
     <div class="container">
-        <a href="admin-menu.html" class="back-link">← 管理者メニューに戻る</a>
-
         <div class="tabs">
             <button class="tab active" data-tab="dashboard">ダッシュボード</button>
             <button class="tab" data-tab="shift">シフト管理</button>
-            <button class="tab" data-tab="unsubmitted">未提出一覧</button>
-            <button class="tab" data-tab="overtime">時間外労働</button>
+            <button class="tab" data-tab="report">業務報告</button>
+            <button class="tab" data-tab="overtime">労働時間管理</button>
         </div>
 
-        <!-- タブ1: ダッシュボード -->
-        <div id="dashboard" class="tab-content active">
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-card-label">シフト提出率</div>
-                    <div class="stat-card-value" id="shiftSubmissionRate">-%</div>
+        <!-- ダッシュボードタブ -->
+        <div id="tab-dashboard" class="tab-content active">
+            <h2 style="font-size: 20px; margin-bottom: 16px;">今日の状況</h2>
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-label">本日出勤予定</div>
+                    <div class="kpi-value" id="todayScheduled">-</div>
+                    <div class="kpi-sub">名</div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-card-label">業務報告未提出</div>
-                    <div class="stat-card-value warning" id="unsubmittedCount">-件</div>
+                <div class="kpi-card">
+                    <div class="kpi-label">業務報告提出率</div>
+                    <div class="kpi-value" id="todayReportRate">-</div>
+                    <div class="kpi-sub">%</div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-card-label">在籍従業員数</div>
-                    <div class="stat-card-value" id="employeeCount">-名</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-card-label">時間外労働超過</div>
-                    <div class="stat-card-value error" id="overtimeExceedCount">-名</div>
-                </div>
-            </div>
-
-            <div id="alertSection" style="display: none;">
-                <div class="alert-box">
-                    <div class="alert-box-title">アラート</div>
-                    <ul class="alert-list" id="alertList">
-                        <!-- 動的生成 -->
-                    </ul>
+                <div class="kpi-card">
+                    <div class="kpi-label">未提出者</div>
+                    <div class="kpi-value" id="todayUnsubmitted">-</div>
+                    <div class="kpi-sub">名</div>
                 </div>
             </div>
 
-            <div id="dashboardLoading" class="loading show">
-                <div class="loading-spinner"></div>
-                <p style="margin-top: 12px; color: var(--gray-700);">データ取得中...</p>
+            <h2 style="font-size: 20px; margin: 32px 0 16px;">今月の状況</h2>
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-label">シフト提出率（翌月）</div>
+                    <div class="kpi-value" id="monthShiftRate">-</div>
+                    <div class="kpi-sub">%</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">平均出勤日数</div>
+                    <div class="kpi-value" id="monthAvgWorkDays">-</div>
+                    <div class="kpi-sub">日</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">45時間超過者</div>
+                    <div class="kpi-value" id="month45hOver">-</div>
+                    <div class="kpi-sub">名</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">80時間超過者</div>
+                    <div class="kpi-value" id="month80hOver">-</div>
+                    <div class="kpi-sub">名</div>
+                </div>
             </div>
-        </div>
 
-        <!-- タブ2: シフト管理 -->
-        <div id="shift" class="tab-content">
             <div class="section">
                 <div class="section-header">
-                    <h3 class="section-title">シフト提出状況</h3>
+                    <h3 class="section-title">アラート（上位5件）</h3>
                 </div>
-
-                <div class="filters">
-                    <input type="month" id="shiftMonth" value="">
-                    <select id="shiftDepartment">
-                        <option value="">全部署</option>
-                        <option value="CS東海">CS東海</option>
-                        <option value="CS関西">CS関西</option>
-                        <option value="企画管理">企画管理</option>
-                    </select>
-                    <select id="shiftStatus">
-                        <option value="">全ステータス</option>
-                        <option value="提出済み">提出済み</option>
-                        <option value="未提出">未提出</option>
-                    </select>
-                    <button id="shiftFilterBtn" class="btn btn-primary">絞り込み</button>
-                </div>
-
-                <div id="shiftLoading" class="loading">
-                    <div class="loading-spinner"></div>
-                    <p style="margin-top: 12px; color: var(--gray-700);">データ取得中...</p>
-                </div>
-
-                <div class="table-container" id="shiftTableContainer" style="display: none;">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>社員ID</th>
-                                <th>氏名</th>
-                                <th>部署</th>
-                                <th>提出状態</th>
-                                <th>提出日時</th>
-                                <th>承認状態</th>
-                                <th>操作</th>
-                            </tr>
-                        </thead>
-                        <tbody id="shiftTableBody">
-                            <!-- 動的生成 -->
-                        </tbody>
-                    </table>
-                </div>
-
-                <div id="shiftNoData" class="no-data" style="display: none;">
-                    データがありません
+                <div id="dashboardAlerts">
+                    <div class="loading show">
+                        <div class="loading-spinner"></div>
+                        <p style="margin-top: 12px;">データ取得中...</p>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- タブ3: 未提出一覧 -->
-        <div id="unsubmitted" class="tab-content">
+        <!-- シフト管理タブ -->
+        <div id="tab-shift" class="tab-content">
             <div class="section">
                 <div class="section-header">
-                    <h3 class="section-title">業務報告未提出一覧</h3>
-                    <button id="refreshUnsubmittedBtn" class="btn btn-secondary btn-small">更新</button>
+                    <h3 class="section-title">シフト管理</h3>
+                    <div class="filters">
+                        <div class="filter-group">
+                            <label>対象年月:</label>
+                            <input type="month" id="shiftMonth">
+                        </div>
+                        <button class="btn btn-primary" id="loadShiftBtn">読み込み</button>
+                    </div>
                 </div>
 
-                <div id="unsubmittedLoading" class="loading">
-                    <div class="loading-spinner"></div>
-                    <p style="margin-top: 12px; color: var(--gray-700);">データ取得中...</p>
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-label">シフト提出率</div>
+                        <div class="kpi-value large" id="shiftSubmitRate">-</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-label">在籍従業員数</div>
+                        <div class="kpi-value" id="shiftTotalEmployees">-</div>
+                        <div class="kpi-sub">名</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-label">平均出勤日数</div>
+                        <div class="kpi-value" id="shiftAvgWorkDays">-</div>
+                        <div class="kpi-sub">日</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-label">平均公休日数</div>
+                        <div class="kpi-value" id="shiftAvgHolidays">-</div>
+                        <div class="kpi-sub">日</div>
+                    </div>
                 </div>
+            </div>
 
-                <div class="table-container" id="unsubmittedTableContainer" style="display: none;">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>社員ID</th>
-                                <th>氏名</th>
-                                <th>対象日</th>
-                                <th>勤務終了時刻</th>
-                                <th>経過時間</th>
-                                <th>稼働先</th>
-                                <th>状態</th>
-                                <th>操作</th>
-                            </tr>
-                        </thead>
-                        <tbody id="unsubmittedTableBody">
-                            <!-- 動的生成 -->
-                        </tbody>
-                    </table>
+            <div class="section">
+                <div class="section-header">
+                    <h3 class="section-title">未提出者一覧</h3>
                 </div>
+                <div id="shiftUnsubmittedArea">
+                    <div class="loading show">
+                        <div class="loading-spinner"></div>
+                    </div>
+                </div>
+            </div>
 
-                <div id="unsubmittedNoData" class="no-data" style="display: none;">
-                    未提出はありません
+            <div class="section">
+                <div class="section-header">
+                    <h3 class="section-title">提出済みシフト一覧</h3>
+                    <div class="filters">
+                        <select id="shiftDeptFilter">
+                            <option value="">全部署</option>
+                            <option value="CS東海">CS東海</option>
+                            <option value="CS関西">CS関西</option>
+                            <option value="企画管理">企画管理</option>
+                        </select>
+                        <button class="btn btn-secondary" id="exportShiftCSV">CSVダウンロード</button>
+                    </div>
+                </div>
+                <div id="shiftSubmittedArea">
+                    <div class="loading show">
+                        <div class="loading-spinner"></div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- タブ4: 時間外労働 -->
-        <div id="overtime" class="tab-content">
+        <!-- 業務報告タブ -->
+        <div id="tab-report" class="tab-content">
             <div class="section">
                 <div class="section-header">
-                    <h3 class="section-title">時間外労働集計</h3>
+                    <h3 class="section-title">業務報告未提出者（自動更新）</h3>
+                    <div class="filters">
+                        <button class="btn btn-primary" id="refreshReportBtn">更新</button>
+                    </div>
+                </div>
+                <div id="reportUnsubmittedArea">
+                    <div class="loading show">
+                        <div class="loading-spinner"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header">
+                    <h3 class="section-title">提出済み業務報告一覧</h3>
+                    <div class="filters">
+                        <select id="reportPeriodFilter">
+                            <option value="today">本日</option>
+                            <option value="week">今週</option>
+                            <option value="month">今月</option>
+                        </select>
+                        <select id="reportDeptFilter">
+                            <option value="">全部署</option>
+                            <option value="CS東海">CS東海</option>
+                            <option value="CS関西">CS関西</option>
+                            <option value="企画管理">企画管理</option>
+                        </select>
+                        <button class="btn btn-primary" id="loadReportBtn">読み込み</button>
+                    </div>
+                </div>
+                <div id="reportSubmittedArea">
+                    <div class="loading show">
+                        <div class="loading-spinner"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 労働時間管理タブ -->
+        <div id="tab-overtime" class="tab-content">
+            <div class="section">
+                <div class="section-header">
+                    <h3 class="section-title">労働時間管理</h3>
+                    <div class="filters">
+                        <div class="filter-group">
+                            <label>対象年月:</label>
+                            <input type="month" id="overtimeMonth">
+                        </div>
+                        <button class="btn btn-primary" id="loadOvertimeBtn">読み込み</button>
+                    </div>
                 </div>
 
-                <div class="filters">
-                    <input type="month" id="overtimeMonth" value="">
-                    <select id="overtimeDepartment">
-                        <option value="">全部署</option>
-                        <option value="CS東海">CS東海</option>
-                        <option value="CS関西">CS関西</option>
-                        <option value="企画管理">企画管理</option>
-                    </select>
-                    <select id="overtimeFilter">
-                        <option value="">全て表示</option>
-                        <option value="over45">45時間超過のみ</option>
-                        <option value="over80">80時間超過のみ</option>
-                    </select>
-                    <button id="overtimeFilterBtn" class="btn btn-primary">絞り込み</button>
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-label">平均出勤日数</div>
+                        <div class="kpi-value" id="overtimeAvgDays">-</div>
+                        <div class="kpi-sub">日 / 22日</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-label">平均総労働時間</div>
+                        <div class="kpi-value" id="overtimeAvgTotal">-</div>
+                        <div class="kpi-sub">時間</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-label">平均超過時間</div>
+                        <div class="kpi-value" id="overtimeAvgOver">-</div>
+                        <div class="kpi-sub">時間（みなし控除後）</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-label">45時間超過者</div>
+                        <div class="kpi-value" id="overtime45hCount">-</div>
+                        <div class="kpi-sub">名</div>
+                    </div>
                 </div>
+            </div>
 
-                <div id="overtimeLoading" class="loading">
-                    <div class="loading-spinner"></div>
-                    <p style="margin-top: 12px; color: var(--gray-700);">データ取得中...</p>
+            <div class="section">
+                <div class="section-header">
+                    <h3 class="section-title">個人別労働時間一覧</h3>
+                    <div class="filters">
+                        <select id="overtimeDeptFilter">
+                            <option value="">全部署</option>
+                            <option value="CS東海">CS東海</option>
+                            <option value="CS関西">CS関西</option>
+                            <option value="企画管理">企画管理</option>
+                        </select>
+                        <select id="overtimeStatusFilter">
+                            <option value="">全て表示</option>
+                            <option value="over45">45時間超過のみ</option>
+                            <option value="over80">80時間超過のみ</option>
+                            <option value="normal">基準内のみ</option>
+                        </select>
+                        <button class="btn btn-secondary" id="exportOvertimeCSV">CSVダウンロード</button>
+                    </div>
                 </div>
-
-                <div class="table-container" id="overtimeTableContainer" style="display: none;">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>社員ID</th>
-                                <th>氏名</th>
-                                <th>部署</th>
-                                <th>出勤日数</th>
-                                <th>総労働時間</th>
-                                <th>所定内</th>
-                                <th>時間外</th>
-                                <th>みなし控除後</th>
-                                <th>状態</th>
-                            </tr>
-                        </thead>
-                        <tbody id="overtimeTableBody">
-                            <!-- 動的生成 -->
-                        </tbody>
-                    </table>
-                </div>
-
-                <div id="overtimeNoData" class="no-data" style="display: none;">
-                    データがありません
+                <div id="overtimeListArea">
+                    <div class="loading show">
+                        <div class="loading-spinner"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -579,364 +649,157 @@
 
         if (isAdmin !== 'true') {
             alert('管理者権限がありません');
-            window.location.href = 'index.html';
+            window.location.href = 'menu.html';
         }
 
         document.getElementById('userName').textContent = employeeName;
 
-        // 今月を初期値に設定
-        const today = new Date();
-        const currentYearMonth = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
-        document.getElementById('shiftMonth').value = currentYearMonth;
-        document.getElementById('overtimeMonth').value = currentYearMonth;
+        // ログアウト
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            if (confirm('ログアウトしますか?')) {
+                sessionStorage.clear();
+                window.location.href = 'index.html';
+            }
+        });
 
         // タブ切り替え
-        document.querySelectorAll('.tab').forEach(tab => {
+        const tabs = document.querySelectorAll('.tab');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        tabs.forEach(tab => {
             tab.addEventListener('click', () => {
-                const targetTab = tab.getAttribute('data-tab');
+                const targetTab = tab.dataset.tab;
                 
-                // タブのアクティブ切り替え
-                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                tabs.forEach(t => t.classList.remove('active'));
+                tabContents.forEach(tc => tc.classList.remove('active'));
+                
                 tab.classList.add('active');
+                document.getElementById(`tab-${targetTab}`).classList.add('active');
 
-                // コンテンツの切り替え
-                document.querySelectorAll('.tab-content').forEach(content => {
-                    content.classList.remove('active');
-                });
-                document.getElementById(targetTab).classList.add('active');
-
-                // タブ初回表示時にデータ読み込み
-                if (targetTab === 'shift' && !document.getElementById('shiftTableContainer').hasAttribute('data-loaded')) {
-                    loadShiftData();
-                } else if (targetTab === 'unsubmitted' && !document.getElementById('unsubmittedTableContainer').hasAttribute('data-loaded')) {
-                    loadUnsubmittedData();
-                } else if (targetTab === 'overtime' && !document.getElementById('overtimeTableContainer').hasAttribute('data-loaded')) {
-                    loadOvertimeData();
+                // タブ切り替え時にデータ読み込み
+                if (targetTab === 'dashboard') {
+                    loadDashboard();
                 }
             });
         });
+
+        // 初期化：デフォルト月設定
+        const today = new Date();
+        const currentYM = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
+        const nextYM = `${today.getFullYear()}-${String(today.getMonth() + 2).padStart(2, '0')}`;
+        
+        document.getElementById('shiftMonth').value = nextYM;
+        document.getElementById('overtimeMonth').value = currentYM;
 
         // ダッシュボード読み込み
         loadDashboard();
 
         async function loadDashboard() {
             try {
-                // 各種統計データを取得（並列実行）
-                const [shiftRes, unsubmittedRes, overtimeRes] = await Promise.all([
-                    fetch(SCRIPT_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ action: 'getShiftData', yearMonth: currentYearMonth })
-                    }),
-                    fetch(SCRIPT_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ action: 'getUnsubmittedList' })
-                    }),
-                    fetch(SCRIPT_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ action: 'getOvertimeData', yearMonth: currentYearMonth })
-                    })
-                ]);
+                // TODO: 実装
+                document.getElementById('todayScheduled').textContent = '-';
+                document.getElementById('todayReportRate').textContent = '-';
+                document.getElementById('todayUnsubmitted').textContent = '-';
+                document.getElementById('monthShiftRate').textContent = '-';
+                document.getElementById('monthAvgWorkDays').textContent = '-';
+                document.getElementById('month45hOver').textContent = '-';
+                document.getElementById('month80hOver').textContent = '-';
 
-                const shiftData = await shiftRes.json();
-                const unsubmittedData = await unsubmittedRes.json();
-                const overtimeData = await overtimeRes.json();
-
-                // シフト提出率
-                if (shiftData.success && shiftData.data) {
-                    const submitted = shiftData.data.filter(d => d.submitStatus === '提出済み').length;
-                    const total = shiftData.data.length;
-                    const rate = total > 0 ? Math.round((submitted / total) * 100) : 0;
-                    document.getElementById('shiftSubmissionRate').textContent = `${rate}%`;
-                }
-
-                // 未提出件数
-                if (unsubmittedData.success && unsubmittedData.data) {
-                    document.getElementById('unsubmittedCount').textContent = `${unsubmittedData.data.length}件`;
-                }
-
-                // 在籍従業員数（シフトデータから）
-                if (shiftData.success && shiftData.data) {
-                    document.getElementById('employeeCount').textContent = `${shiftData.data.length}名`;
-                }
-
-                // 時間外労働超過人数
-                if (overtimeData.success && overtimeData.data) {
-                    const exceedCount = overtimeData.data.filter(d => d.over45).length;
-                    document.getElementById('overtimeExceedCount').textContent = `${exceedCount}名`;
-                }
-
-                // アラート生成
-                const alerts = [];
-                if (unsubmittedData.success && unsubmittedData.data.length > 0) {
-                    alerts.push(`業務報告未提出: ${unsubmittedData.data.length}件`);
-                }
-                if (overtimeData.success && overtimeData.data) {
-                    const over80 = overtimeData.data.filter(d => d.over80).length;
-                    if (over80 > 0) {
-                        alerts.push(`時間外労働80時間超過: ${over80}名`);
-                    }
-                }
-
-                if (alerts.length > 0) {
-                    const alertList = document.getElementById('alertList');
-                    alertList.innerHTML = alerts.map(alert => `<li>${alert}</li>`).join('');
-                    document.getElementById('alertSection').style.display = 'block';
-                }
-
+                const alertsArea = document.getElementById('dashboardAlerts');
+                alertsArea.innerHTML = '<div class="no-data">データを準備中です</div>';
             } catch (error) {
-                console.error('ダッシュボードデータ取得エラー:', error);
-            } finally {
-                document.getElementById('dashboardLoading').classList.remove('show');
+                console.error('ダッシュボード読み込みエラー:', error);
             }
         }
 
-        // シフト管理データ読み込み
-        document.getElementById('shiftFilterBtn').addEventListener('click', loadShiftData);
+        // シフト管理読み込み
+        document.getElementById('loadShiftBtn').addEventListener('click', loadShiftData);
 
         async function loadShiftData() {
             const yearMonth = document.getElementById('shiftMonth').value;
-            const department = document.getElementById('shiftDepartment').value;
-            const status = document.getElementById('shiftStatus').value;
-
-            document.getElementById('shiftLoading').classList.add('show');
-            document.getElementById('shiftTableContainer').style.display = 'none';
-            document.getElementById('shiftNoData').style.display = 'none';
+            if (!yearMonth) {
+                alert('対象年月を選択してください');
+                return;
+            }
 
             try {
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        action: 'getShiftData', 
-                        yearMonth: yearMonth,
-                        departmentFilter: department 
-                    })
-                });
+                // TODO: API実装後に置き換え
+                document.getElementById('shiftSubmitRate').textContent = '-%';
+                document.getElementById('shiftTotalEmployees').textContent = '-';
+                document.getElementById('shiftAvgWorkDays').textContent = '-';
+                document.getElementById('shiftAvgHolidays').textContent = '-';
 
-                const result = await response.json();
+                const unsubmittedArea = document.getElementById('shiftUnsubmittedArea');
+                unsubmittedArea.innerHTML = '<div class="no-data">データを準備中です</div>';
 
-                if (result.success && result.data && result.data.length > 0) {
-                    let filteredData = result.data;
-                    
-                    // ステータスフィルタ
-                    if (status) {
-                        filteredData = filteredData.filter(d => d.submitStatus === status);
-                    }
-
-                    if (filteredData.length > 0) {
-                        renderShiftTable(filteredData);
-                        document.getElementById('shiftTableContainer').style.display = 'block';
-                        document.getElementById('shiftTableContainer').setAttribute('data-loaded', 'true');
-                    } else {
-                        document.getElementById('shiftNoData').style.display = 'block';
-                    }
-                } else {
-                    document.getElementById('shiftNoData').style.display = 'block';
-                }
+                const submittedArea = document.getElementById('shiftSubmittedArea');
+                submittedArea.innerHTML = '<div class="no-data">データを準備中です</div>';
             } catch (error) {
-                console.error('シフトデータ取得エラー:', error);
-                document.getElementById('shiftNoData').style.display = 'block';
-            } finally {
-                document.getElementById('shiftLoading').classList.remove('show');
+                console.error('シフトデータ読み込みエラー:', error);
             }
         }
 
-        function renderShiftTable(data) {
-            const tbody = document.getElementById('shiftTableBody');
-            tbody.innerHTML = '';
+        // 業務報告読み込み
+        document.getElementById('refreshReportBtn').addEventListener('click', loadReportUnsubmitted);
+        document.getElementById('loadReportBtn').addEventListener('click', loadReportSubmitted);
 
-            data.forEach(item => {
-                const tr = document.createElement('tr');
-                
-                const statusBadge = item.submitStatus === '提出済み' ? 
-                    '<span class="badge badge-success">提出済み</span>' : 
-                    '<span class="badge badge-gray">未提出</span>';
-
-                const approvalBadge = item.approvalStatus === '承認済み' ?
-                    '<span class="badge badge-success">承認済み</span>' :
-                    '<span class="badge badge-gray">未承認</span>';
-
-                tr.innerHTML = `
-                    <td>${item.employeeId}</td>
-                    <td>${item.employeeName}</td>
-                    <td>${item.department}</td>
-                    <td>${statusBadge}</td>
-                    <td>${item.submitDate || '-'}</td>
-                    <td>${approvalBadge}</td>
-                    <td>
-                        <button class="btn btn-secondary btn-small" onclick="viewShiftDetail('${item.employeeId}')">詳細</button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        function viewShiftDetail(employeeId) {
-            alert(`${employeeId}のシフト詳細表示（未実装）`);
-        }
-
-        // 未提出一覧データ読み込み
-        document.getElementById('refreshUnsubmittedBtn').addEventListener('click', loadUnsubmittedData);
-
-        async function loadUnsubmittedData() {
-            document.getElementById('unsubmittedLoading').classList.add('show');
-            document.getElementById('unsubmittedTableContainer').style.display = 'none';
-            document.getElementById('unsubmittedNoData').style.display = 'none';
-
+        async function loadReportUnsubmitted() {
             try {
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'getUnsubmittedList' })
-                });
-
-                const result = await response.json();
-
-                if (result.success && result.data && result.data.length > 0) {
-                    renderUnsubmittedTable(result.data);
-                    document.getElementById('unsubmittedTableContainer').style.display = 'block';
-                    document.getElementById('unsubmittedTableContainer').setAttribute('data-loaded', 'true');
-                } else {
-                    document.getElementById('unsubmittedNoData').style.display = 'block';
-                }
+                const unsubmittedArea = document.getElementById('reportUnsubmittedArea');
+                unsubmittedArea.innerHTML = '<div class="no-data">データを準備中です</div>';
             } catch (error) {
-                console.error('未提出データ取得エラー:', error);
-                document.getElementById('unsubmittedNoData').style.display = 'block';
-            } finally {
-                document.getElementById('unsubmittedLoading').classList.remove('show');
+                console.error('未提出データ読み込みエラー:', error);
             }
         }
 
-        function renderUnsubmittedTable(data) {
-            const tbody = document.getElementById('unsubmittedTableBody');
-            tbody.innerHTML = '';
-
-            data.forEach(item => {
-                const tr = document.createElement('tr');
-                
-                // 経過時間で色分け
-                const elapsedHours = parseFloat(item.elapsed) || 0;
-                let statusBadge;
-                if (elapsedHours >= 2) {
-                    statusBadge = '<span class="badge badge-error">2時間以上</span>';
-                } else if (elapsedHours >= 1) {
-                    statusBadge = '<span class="badge badge-warning">1-2時間</span>';
-                } else {
-                    statusBadge = '<span class="badge badge-gray">1時間未満</span>';
-                }
-
-                tr.innerHTML = `
-                    <td>${item.employeeId}</td>
-                    <td>${item.employeeName}</td>
-                    <td>${item.date}</td>
-                    <td>${item.endTime}</td>
-                    <td>${item.elapsed}</td>
-                    <td>${item.workplace || '-'}</td>
-                    <td>${statusBadge}</td>
-                    <td>
-                        <button class="btn btn-secondary btn-small" onclick="sendReminder('${item.employeeId}')">催促</button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        function sendReminder(employeeId) {
-            if (confirm(`${employeeId}に催促メールを送信しますか？`)) {
-                alert('催促メール送信機能は未実装です');
+        async function loadReportSubmitted() {
+            try {
+                const submittedArea = document.getElementById('reportSubmittedArea');
+                submittedArea.innerHTML = '<div class="no-data">データを準備中です</div>';
+            } catch (error) {
+                console.error('提出済みデータ読み込みエラー:', error);
             }
         }
 
-        // 時間外労働データ読み込み
-        document.getElementById('overtimeFilterBtn').addEventListener('click', loadOvertimeData);
+        // 労働時間管理読み込み
+        document.getElementById('loadOvertimeBtn').addEventListener('click', loadOvertimeData);
 
         async function loadOvertimeData() {
             const yearMonth = document.getElementById('overtimeMonth').value;
-            const department = document.getElementById('overtimeDepartment').value;
-            const filter = document.getElementById('overtimeFilter').value;
-
-            document.getElementById('overtimeLoading').classList.add('show');
-            document.getElementById('overtimeTableContainer').style.display = 'none';
-            document.getElementById('overtimeNoData').style.display = 'none';
+            if (!yearMonth) {
+                alert('対象年月を選択してください');
+                return;
+            }
 
             try {
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'getOvertimeData', yearMonth: yearMonth })
-                });
+                document.getElementById('overtimeAvgDays').textContent = '-';
+                document.getElementById('overtimeAvgTotal').textContent = '-';
+                document.getElementById('overtimeAvgOver').textContent = '-';
+                document.getElementById('overtime45hCount').textContent = '-';
 
-                const result = await response.json();
-
-                if (result.success && result.data && result.data.length > 0) {
-                    let filteredData = result.data;
-                    
-                    // 部署フィルタ
-                    if (department) {
-                        filteredData = filteredData.filter(d => d.department === department);
-                    }
-
-                    // 時間外フィルタ
-                    if (filter === 'over45') {
-                        filteredData = filteredData.filter(d => d.over45);
-                    } else if (filter === 'over80') {
-                        filteredData = filteredData.filter(d => d.over80);
-                    }
-
-                    if (filteredData.length > 0) {
-                        renderOvertimeTable(filteredData);
-                        document.getElementById('overtimeTableContainer').style.display = 'block';
-                        document.getElementById('overtimeTableContainer').setAttribute('data-loaded', 'true');
-                    } else {
-                        document.getElementById('overtimeNoData').style.display = 'block';
-                    }
-                } else {
-                    document.getElementById('overtimeNoData').style.display = 'block';
-                }
+                const listArea = document.getElementById('overtimeListArea');
+                listArea.innerHTML = '<div class="no-data">データを準備中です</div>';
             } catch (error) {
-                console.error('時間外労働データ取得エラー:', error);
-                document.getElementById('overtimeNoData').style.display = 'block';
-            } finally {
-                document.getElementById('overtimeLoading').classList.remove('show');
+                console.error('労働時間データ読み込みエラー:', error);
             }
         }
 
-        function renderOvertimeTable(data) {
-            const tbody = document.getElementById('overtimeTableBody');
-            tbody.innerHTML = '';
+        // CSVエクスポート
+        document.getElementById('exportShiftCSV').addEventListener('click', () => {
+            alert('CSV出力機能は準備中です');
+        });
 
-            data.forEach(item => {
-                const tr = document.createElement('tr');
-                
-                // ステータスバッジ
-                let statusBadge;
-                if (item.over80) {
-                    statusBadge = '<span class="badge badge-error">80時間超過</span>';
-                } else if (item.over45) {
-                    statusBadge = '<span class="badge badge-error">45時間超過</span>';
-                } else if (item.overtimeHours >= 40) {
-                    statusBadge = '<span class="badge badge-warning">40時間以上</span>';
-                } else {
-                    statusBadge = '<span class="badge badge-success">正常</span>';
-                }
+        document.getElementById('exportOvertimeCSV').addEventListener('click', () => {
+            alert('CSV出力機能は準備中です');
+        });
 
-                tr.innerHTML = `
-                    <td>${item.employeeId}</td>
-                    <td>${item.employeeName}</td>
-                    <td>${item.department}</td>
-                    <td>${item.workDays}日</td>
-                    <td>${item.totalHours.toFixed(1)}h</td>
-                    <td>${item.regularHours.toFixed(1)}h</td>
-                    <td>${item.overtimeHours.toFixed(1)}h</td>
-                    <td>${item.deemOvertime.toFixed(1)}h</td>
-                    <td>${statusBadge}</td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
+        // 5分ごとに業務報告未提出を自動更新（業務報告タブが開いている場合のみ）
+        setInterval(() => {
+            const reportTab = document.getElementById('tab-report');
+            if (reportTab.classList.contains('active')) {
+                loadReportUnsubmitted();
+            }
+        }, 300000); // 5分 = 300000ms
     </script>
 </body>
 </html>
