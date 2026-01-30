@@ -257,7 +257,7 @@
         .loading {
             display: none;
             text-align: center;
-            padding: 20px;
+            margin-top: 16px;
         }
 
         .loading.show {
@@ -266,9 +266,9 @@
 
         .loading-spinner {
             display: inline-block;
-            width: 40px;
-            height: 40px;
-            border: 4px solid var(--gray-200);
+            width: 20px;
+            height: 20px;
+            border: 3px solid var(--gray-200);
             border-top-color: var(--primary);
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
@@ -278,7 +278,7 @@
             to { transform: rotate(360deg); }
         }
 
-        @media (max-width: 600px) {
+        @media (max-width: 768px) {
             .form-grid {
                 grid-template-columns: 1fr;
             }
@@ -299,19 +299,20 @@
 
     <div class="container">
         <h2 class="page-title">実績入力</h2>
-        <p class="page-subtitle">業務実績を入力してください</p>
+        <p class="page-subtitle">日次の実績数値を入力してください</p>
 
-        <div class="info-box" id="contextInfo">
-            <!-- 動的生成 -->
+        <div class="info-box">
+            <strong>📊 入力情報</strong>
+            <div>日付: <span id="displayDate"></span></div>
+            <div>稼働区分: <span id="displayKubun"></span></div>
+            <div>勤務地: <span id="displayWorkplace"></span></div>
         </div>
 
         <div id="errorMessage" class="error-message"></div>
         <div id="successMessage" class="success-message"></div>
 
         <form id="performanceForm">
-            <div id="formContainer">
-                <!-- 動的生成 -->
-            </div>
+            <div id="formContainer"></div>
 
             <button type="submit" id="submitBtn" class="btn btn-primary">
                 実績を保存
@@ -320,59 +321,53 @@
 
         <div id="loading" class="loading">
             <div class="loading-spinner"></div>
-            <p style="margin-top: 12px; color: var(--gray-700);">保存中...</p>
         </div>
     </div>
 
     <script>
         const SCRIPT_URL = 'https://interblue-proxy.k-hamada-ib.workers.dev/';
 
-        // 認証チェック
+        // URLパラメータ取得
+        const params = new URLSearchParams(window.location.search);
+        const date = params.get('date');
+        const kubun = params.get('kubun');
+        const workplace = params.get('workplace');
+
+        // セッション情報取得
         const employeeId = sessionStorage.getItem('employeeId');
         const employeeName = sessionStorage.getItem('employeeName');
 
-        if (!employeeId) {
-            window.location.href = 'index.html';
-        }
-
-        document.getElementById('userName').textContent = employeeName;
-
-        // URLパラメータ取得
-        const urlParams = new URLSearchParams(window.location.search);
-        const kubun = urlParams.get('kubun');
-        const date = urlParams.get('date');
-        const workplace = sessionStorage.getItem('lastWorkplace') || '';
-
-        if (!kubun || !date) {
-            alert('不正なアクセスです');
+        // 認証チェック
+        if (!employeeId || !date || !kubun || !workplace) {
+            alert('必要な情報が不足しています');
             window.location.href = 'menu.html';
         }
 
-        // コンテキスト情報表示
-        document.getElementById('contextInfo').innerHTML = `
-            <strong>実績入力対象</strong>
-            稼働区分: ${kubun}<br>
-            日付: ${date}<br>
-            稼働先: ${workplace}
-        `;
+        // ユーザー名表示
+        document.getElementById('userName').textContent = employeeName;
+
+        // 情報表示
+        document.getElementById('displayDate').textContent = date;
+        document.getElementById('displayKubun').textContent = kubun;
+        document.getElementById('displayWorkplace').textContent = workplace;
 
         // 全角数字を半角に変換
         function toHalfWidth(str) {
             return str.replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0));
         }
 
-        // 数値バリデーション
+        // 数値バリデーション（修正版）
         function validateNumber(input) {
-            if (!input.value) {
-                input.value = '0'; // 空の場合は0を設定
+            // 全角を半角に変換
+            input.value = toHalfWidth(input.value);
+            
+            // 空の場合はエラーなしで終了（空を許容）
+            if (!input.value || input.value.trim() === '') {
                 input.classList.remove('error');
                 const errorText = input.parentElement.querySelector('.error-text');
                 if (errorText) errorText.classList.remove('show');
                 return true;
             }
-            
-            // 全角を半角に変換
-            input.value = toHalfWidth(input.value);
             
             // 数値チェック
             const num = parseFloat(input.value);
@@ -387,6 +382,13 @@
                 }
                 errorText.classList.add('show');
                 return false;
+            }
+            
+            // 正常な数値の場合、先頭の0を除去（例: "01" → "1"）
+            if (num === 0) {
+                input.value = '0';
+            } else {
+                input.value = String(num);
             }
             
             input.classList.remove('error');
@@ -450,7 +452,8 @@
                     input.id = field.id;
                     input.name = field.id;
                     input.min = '0';
-                    input.placeholder = '0'; // プレースホルダーに変更
+                    input.placeholder = '0';
+                    // デフォルト値を設定しない（空のまま）
 
                     // バリデーション追加
                     input.addEventListener('input', () => validateNumber(input));
@@ -480,7 +483,8 @@
                     input.id = field.id;
                     input.name = field.id;
                     input.min = '0';
-                    input.placeholder = '0'; // プレースホルダーに変更
+                    input.placeholder = '0';
+                    // デフォルト値を設定しない（空のまま）
 
                     // バリデーション追加
                     input.addEventListener('input', () => validateNumber(input));
@@ -542,12 +546,13 @@
                 return;
             }
 
-            // データ収集
+            // データ収集（空の場合は'0'を設定）
             const formData = new FormData(e.target);
             const items = {};
             
             for (let [key, value] of formData.entries()) {
-                items[key] = value || '0';
+                // 空の場合は'0'、値がある場合はそのままの値を使用
+                items[key] = (value && value.trim() !== '') ? value : '0';
             }
 
             const data = {
