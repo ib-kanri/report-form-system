@@ -385,7 +385,6 @@
                 <h1>管理者ダッシュボード</h1>
             </div>
             <div class="user-info">
-                <span class="header-badge">管理者</span>
                 <span id="userName"></span>
                 <button id="logoutBtn" class="btn-logout">ログアウト</button>
             </div>
@@ -696,19 +695,58 @@
 
         async function loadDashboard() {
             try {
-                // TODO: 実装
-                document.getElementById('todayScheduled').textContent = '-';
-                document.getElementById('todayReportRate').textContent = '-';
-                document.getElementById('todayUnsubmitted').textContent = '-';
-                document.getElementById('monthShiftRate').textContent = '-';
-                document.getElementById('monthAvgWorkDays').textContent = '-';
-                document.getElementById('month45hOver').textContent = '-';
-                document.getElementById('month80hOver').textContent = '-';
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'getDashboardSummary' })
+                });
 
-                const alertsArea = document.getElementById('dashboardAlerts');
-                alertsArea.innerHTML = '<div class="no-data">データを準備中です</div>';
+                const result = await response.json();
+
+                if (result.success && result.data) {
+                    const data = result.data;
+                    
+                    // 今日のデータ
+                    document.getElementById('todayScheduled').textContent = data.today.scheduledCount || 0;
+                    document.getElementById('todayReportRate').textContent = data.today.reportRate || 0;
+                    document.getElementById('todayUnsubmitted').textContent = data.today.unsubmittedCount || 0;
+                    
+                    // 今月のデータ
+                    document.getElementById('monthShiftRate').textContent = data.month.shiftRate || '-';
+                    document.getElementById('monthAvgWorkDays').textContent = data.month.avgWorkDays || '-';
+                    document.getElementById('month45hOver').textContent = data.month.over45Count || 0;
+                    document.getElementById('month80hOver').textContent = data.month.over80Count || 0;
+                    
+                    // アラート表示
+                    const alertsArea = document.getElementById('dashboardAlerts');
+                    const alerts = [];
+                    
+                    if (data.today.unsubmittedCount > 0) {
+                        alerts.push({ type: 'critical', message: `業務報告未提出: ${data.today.unsubmittedCount}名` });
+                    }
+                    if (data.month.over80Count > 0) {
+                        alerts.push({ type: 'critical', message: `80時間超過者: ${data.month.over80Count}名（違法レベル）` });
+                    }
+                    if (data.month.over45Count > 0) {
+                        alerts.push({ type: 'warning', message: `45時間超過者: ${data.month.over45Count}名` });
+                    }
+                    
+                    if (alerts.length > 0) {
+                        const alertsHTML = '<ul class="alert-list">' +
+                            alerts.slice(0, 5).map(a => 
+                                `<li class="alert-item ${a.type}">${a.message}</li>`
+                            ).join('') +
+                            '</ul>';
+                        alertsArea.innerHTML = alertsHTML;
+                    } else {
+                        alertsArea.innerHTML = '<div class="no-data">アラートはありません</div>';
+                    }
+                } else {
+                    document.getElementById('dashboardAlerts').innerHTML = '<div class="no-data">データ取得に失敗しました</div>';
+                }
             } catch (error) {
                 console.error('ダッシュボード読み込みエラー:', error);
+                document.getElementById('dashboardAlerts').innerHTML = '<div class="no-data">通信エラーが発生しました</div>';
             }
         }
 
@@ -723,19 +761,111 @@
             }
 
             try {
-                // TODO: API実装後に置き換え
-                document.getElementById('shiftSubmitRate').textContent = '-%';
-                document.getElementById('shiftTotalEmployees').textContent = '-';
-                document.getElementById('shiftAvgWorkDays').textContent = '-';
-                document.getElementById('shiftAvgHolidays').textContent = '-';
+                // サマリー取得
+                const summaryRes = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'getShiftSummary', yearMonth })
+                });
+                const summaryResult = await summaryRes.json();
+
+                if (summaryResult.success) {
+                    const data = summaryResult.data;
+                    document.getElementById('shiftSubmitRate').textContent = data.submitRate;
+                    document.getElementById('shiftTotalEmployees').textContent = data.totalEmployees;
+                    document.getElementById('shiftAvgWorkDays').textContent = data.avgWorkDays;
+                    document.getElementById('shiftAvgHolidays').textContent = data.avgHolidays;
+                }
+
+                // 未提出者リスト取得
+                const unsubmittedRes = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'getShiftUnsubmitted', yearMonth })
+                });
+                const unsubmittedResult = await unsubmittedRes.json();
 
                 const unsubmittedArea = document.getElementById('shiftUnsubmittedArea');
-                unsubmittedArea.innerHTML = '<div class="no-data">データを準備中です</div>';
+                if (unsubmittedResult.success && unsubmittedResult.data.length > 0) {
+                    const tableHTML = `
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>社員ID</th>
+                                        <th>氏名</th>
+                                        <th>部署</th>
+                                        <th>チーム</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${unsubmittedResult.data.map(emp => `
+                                        <tr>
+                                            <td>${emp.employeeId}</td>
+                                            <td>${emp.employeeName}</td>
+                                            <td>${emp.department}</td>
+                                            <td>${emp.team}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                    unsubmittedArea.innerHTML = tableHTML;
+                } else {
+                    unsubmittedArea.innerHTML = '<div class="no-data">未提出者はいません</div>';
+                }
+
+                // 提出済みリスト取得
+                const deptFilter = document.getElementById('shiftDeptFilter').value;
+                const submittedRes = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'getShiftSubmitted', yearMonth, departmentFilter: deptFilter })
+                });
+                const submittedResult = await submittedRes.json();
 
                 const submittedArea = document.getElementById('shiftSubmittedArea');
-                submittedArea.innerHTML = '<div class="no-data">データを準備中です</div>';
+                if (submittedResult.success && submittedResult.data.length > 0) {
+                    const tableHTML = `
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>社員ID</th>
+                                        <th>氏名</th>
+                                        <th>部署</th>
+                                        <th>チーム</th>
+                                        <th>提出日時</th>
+                                        <th>出勤日数</th>
+                                        <th>公休日数</th>
+                                        <th>有給日数</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${submittedResult.data.map(emp => `
+                                        <tr>
+                                            <td>${emp.employeeId}</td>
+                                            <td>${emp.employeeName}</td>
+                                            <td>${emp.department}</td>
+                                            <td>${emp.team}</td>
+                                            <td>${emp.submitDate}</td>
+                                            <td>${emp.workDays}日</td>
+                                            <td>${emp.holidays}日</td>
+                                            <td>${emp.paidLeave}日</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                    submittedArea.innerHTML = tableHTML;
+                } else {
+                    submittedArea.innerHTML = '<div class="no-data">提出済みシフトはありません</div>';
+                }
             } catch (error) {
                 console.error('シフトデータ読み込みエラー:', error);
+                document.getElementById('shiftUnsubmittedArea').innerHTML = '<div class="no-data">通信エラーが発生しました</div>';
             }
         }
 
@@ -745,19 +875,112 @@
 
         async function loadReportUnsubmitted() {
             try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'getReportUnsubmitted' })
+                });
+
+                const result = await response.json();
                 const unsubmittedArea = document.getElementById('reportUnsubmittedArea');
-                unsubmittedArea.innerHTML = '<div class="no-data">データを準備中です</div>';
+
+                if (result.success && result.data.length > 0) {
+                    const tableHTML = `
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>社員ID</th>
+                                        <th>氏名</th>
+                                        <th>部署</th>
+                                        <th>対象日</th>
+                                        <th>勤務終了時刻</th>
+                                        <th>経過時間</th>
+                                        <th>稼働先</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${result.data.map(emp => `
+                                        <tr>
+                                            <td>${emp.employeeId}</td>
+                                            <td>${emp.employeeName}</td>
+                                            <td>${emp.department}</td>
+                                            <td>${emp.targetDate}</td>
+                                            <td>${emp.endTime}</td>
+                                            <td style="color: var(--error); font-weight: 500;">${emp.elapsed}</td>
+                                            <td>${emp.workplace}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                    unsubmittedArea.innerHTML = tableHTML;
+                } else {
+                    unsubmittedArea.innerHTML = '<div class="no-data">未提出者はいません</div>';
+                }
             } catch (error) {
                 console.error('未提出データ読み込みエラー:', error);
+                document.getElementById('reportUnsubmittedArea').innerHTML = '<div class="no-data">通信エラーが発生しました</div>';
             }
         }
 
         async function loadReportSubmitted() {
             try {
+                const period = document.getElementById('reportPeriodFilter').value;
+                const department = document.getElementById('reportDeptFilter').value;
+
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'getReportSubmitted', period, departmentFilter: department })
+                });
+
+                const result = await response.json();
                 const submittedArea = document.getElementById('reportSubmittedArea');
-                submittedArea.innerHTML = '<div class="no-data">データを準備中です</div>';
+
+                if (result.success && result.data.length > 0) {
+                    const tableHTML = `
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>提出日時</th>
+                                        <th>社員ID</th>
+                                        <th>氏名</th>
+                                        <th>対象日</th>
+                                        <th>勤務時間</th>
+                                        <th>実労働時間</th>
+                                        <th>休憩時間</th>
+                                        <th>稼働区分</th>
+                                        <th>稼働先</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${result.data.map(emp => `
+                                        <tr>
+                                            <td>${emp.submitDate}</td>
+                                            <td>${emp.employeeId}</td>
+                                            <td>${emp.employeeName}</td>
+                                            <td>${emp.targetDate}</td>
+                                            <td>${emp.workTime}</td>
+                                            <td>${emp.workHours}時間</td>
+                                            <td>${emp.breakTime}分</td>
+                                            <td>${emp.kubun}</td>
+                                            <td>${emp.workplace}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                    submittedArea.innerHTML = tableHTML;
+                } else {
+                    submittedArea.innerHTML = '<div class="no-data">該当する業務報告はありません</div>';
+                }
             } catch (error) {
                 console.error('提出済みデータ読み込みエラー:', error);
+                document.getElementById('reportSubmittedArea').innerHTML = '<div class="no-data">通信エラーが発生しました</div>';
             }
         }
 
@@ -772,15 +995,81 @@
             }
 
             try {
-                document.getElementById('overtimeAvgDays').textContent = '-';
-                document.getElementById('overtimeAvgTotal').textContent = '-';
-                document.getElementById('overtimeAvgOver').textContent = '-';
-                document.getElementById('overtime45hCount').textContent = '-';
+                // サマリー取得
+                const summaryRes = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'getOvertimeSummary', yearMonth })
+                });
+                const summaryResult = await summaryRes.json();
+
+                if (summaryResult.success) {
+                    const data = summaryResult.data;
+                    document.getElementById('overtimeAvgDays').textContent = data.avgWorkDays;
+                    document.getElementById('overtimeAvgTotal').textContent = data.avgTotalHours;
+                    document.getElementById('overtimeAvgOver').textContent = data.avgOvertime;
+                    document.getElementById('overtime45hCount').textContent = data.over45Count;
+                }
+
+                // 個人別リスト取得
+                const deptFilter = document.getElementById('overtimeDeptFilter').value;
+                const statusFilter = document.getElementById('overtimeStatusFilter').value;
+
+                const listRes = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        action: 'getOvertimeList', 
+                        yearMonth, 
+                        departmentFilter: deptFilter,
+                        statusFilter: statusFilter
+                    })
+                });
+                const listResult = await listRes.json();
 
                 const listArea = document.getElementById('overtimeListArea');
-                listArea.innerHTML = '<div class="no-data">データを準備中です</div>';
+                if (listResult.success && listResult.data.length > 0) {
+                    const tableHTML = `
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>社員ID</th>
+                                        <th>氏名</th>
+                                        <th>部署</th>
+                                        <th>出勤日数</th>
+                                        <th>総労働時間</th>
+                                        <th>所定内労働</th>
+                                        <th>実残業時間</th>
+                                        <th>みなし控除後</th>
+                                        <th>状態</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${listResult.data.map(emp => `
+                                        <tr>
+                                            <td>${emp.employeeId}</td>
+                                            <td>${emp.employeeName}</td>
+                                            <td>${emp.department}</td>
+                                            <td>${emp.workDays} / 22日</td>
+                                            <td>${emp.totalHours}時間</td>
+                                            <td>${emp.standardHours}時間</td>
+                                            <td>${emp.actualOvertime}時間</td>
+                                            <td class="status-${emp.statusClass}">${emp.overtimeAfterDeduction}時間</td>
+                                            <td><span class="badge badge-${emp.statusClass === 'normal' ? 'success' : emp.statusClass === 'warning' ? 'warning' : 'error'}">${emp.statusLabel}</span></td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                    listArea.innerHTML = tableHTML;
+                } else {
+                    listArea.innerHTML = '<div class="no-data">該当するデータはありません</div>';
+                }
             } catch (error) {
                 console.error('労働時間データ読み込みエラー:', error);
+                document.getElementById('overtimeListArea').innerHTML = '<div class="no-data">通信エラーが発生しました</div>';
             }
         }
 
