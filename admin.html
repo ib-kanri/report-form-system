@@ -376,6 +376,142 @@
                 align-items: stretch;
             }
         }
+
+        /* モーダルスタイル */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            overflow-y: auto;
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            max-width: 800px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--gray-100);
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 500;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--gray-700);
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+        }
+
+        .modal-close:hover {
+            background: var(--gray-100);
+        }
+
+        .modal-body {
+            margin-bottom: 20px;
+        }
+
+        .link-text {
+            color: var(--primary);
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .link-text:hover {
+            text-decoration: underline;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+            margin-top: 16px;
+        }
+
+        .calendar-header {
+            background: var(--gray-100);
+            padding: 8px;
+            text-align: center;
+            font-size: 12px;
+            font-weight: 500;
+            border-radius: 4px;
+        }
+
+        .calendar-day {
+            border: 1px solid var(--gray-200);
+            border-radius: 4px;
+            padding: 8px;
+            min-height: 80px;
+            font-size: 12px;
+        }
+
+        .calendar-day-header {
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .calendar-day-work {
+            background: #e6f4ea;
+            border-color: var(--success);
+        }
+
+        .calendar-day-holiday {
+            background: var(--gray-100);
+        }
+
+        .calendar-day-paid {
+            background: #e3f2fd;
+            border-color: var(--primary);
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 150px 1fr;
+            gap: 12px 16px;
+            margin-top: 12px;
+        }
+
+        .detail-label {
+            font-weight: 500;
+            color: var(--gray-700);
+        }
+
+        .detail-value {
+            color: var(--gray-900);
+        }
     </style>
 </head>
 <body>
@@ -634,6 +770,32 @@
         </div>
     </div>
 
+    <!-- シフト詳細モーダル -->
+    <div id="shiftDetailModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="shiftDetailModalTitle">シフト詳細</h3>
+                <button class="modal-close" onclick="closeShiftDetailModal()">×</button>
+            </div>
+            <div class="modal-body" id="shiftDetailModalBody">
+                <!-- 動的生成 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 業務報告詳細モーダル -->
+    <div id="reportDetailModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="reportDetailModalTitle">業務報告詳細</h3>
+                <button class="modal-close" onclick="closeReportDetailModal()">×</button>
+            </div>
+            <div class="modal-body" id="reportDetailModalBody">
+                <!-- 動的生成 -->
+            </div>
+        </div>
+    </div>
+
     <script>
         const SCRIPT_URL = 'https://interblue-proxy.k-hamada-ib.workers.dev/';
 
@@ -846,7 +1008,7 @@
                                     ${submittedResult.data.map(emp => `
                                         <tr>
                                             <td>${emp.employeeId}</td>
-                                            <td>${emp.employeeName}</td>
+                                            <td><span class="link-text" onclick="showShiftDetail('${emp.employeeId}', '${emp.employeeName}', '${yearMonth}')">${emp.employeeName}</span></td>
                                             <td>${emp.department}</td>
                                             <td>${emp.team}</td>
                                             <td>${emp.submitDate}</td>
@@ -867,6 +1029,82 @@
                 console.error('シフトデータ読み込みエラー:', error);
                 document.getElementById('shiftUnsubmittedArea').innerHTML = '<div class="no-data">通信エラーが発生しました</div>';
             }
+        }
+
+        // シフト詳細モーダル表示
+        async function showShiftDetail(employeeId, employeeName, yearMonth) {
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'getShiftDetail', employeeId, yearMonth })
+                });
+
+                const result = await response.json();
+
+                if (result.success && result.data && result.data.length > 0) {
+                    const modal = document.getElementById('shiftDetailModal');
+                    const title = document.getElementById('shiftDetailModalTitle');
+                    const body = document.getElementById('shiftDetailModalBody');
+
+                    title.textContent = `${employeeName}さんのシフト（${yearMonth}）`;
+
+                    // カレンダー形式で表示
+                    const [year, month] = yearMonth.split('-').map(Number);
+                    const daysInMonth = new Date(year, month, 0).getDate();
+                    const firstDay = new Date(year, month - 1, 1).getDay();
+
+                    const shiftMap = {};
+                    result.data.forEach(shift => {
+                        shiftMap[shift.date] = shift;
+                    });
+
+                    let calendarHTML = '<div class="calendar-grid">';
+                    ['日', '月', '火', '水', '木', '金', '土'].forEach(dow => {
+                        calendarHTML += `<div class="calendar-header">${dow}</div>`;
+                    });
+
+                    // 空白セル
+                    for (let i = 0; i < firstDay; i++) {
+                        calendarHTML += '<div class="calendar-day"></div>';
+                    }
+
+                    // 日付セル
+                    for (let day = 1; day <= daysInMonth; day++) {
+                        const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                        const shift = shiftMap[dateStr];
+                        const workType = shift ? shift.workType : '';
+                        
+                        let dayClass = 'calendar-day';
+                        if (workType === '出勤') dayClass += ' calendar-day-work';
+                        else if (workType === '公休') dayClass += ' calendar-day-holiday';
+                        else if (workType === '有給') dayClass += ' calendar-day-paid';
+
+                        calendarHTML += `
+                            <div class="${dayClass}">
+                                <div class="calendar-day-header">${day}日</div>
+                                <div><strong>${workType || '-'}</strong></div>
+                                ${shift && shift.startTime ? `<div>${shift.startTime}-${shift.endTime}</div>` : ''}
+                                ${shift && shift.breakTime ? `<div>休憩:${shift.breakTime}分</div>` : ''}
+                            </div>
+                        `;
+                    }
+
+                    calendarHTML += '</div>';
+                    body.innerHTML = calendarHTML;
+
+                    modal.classList.add('show');
+                } else {
+                    alert('シフト詳細の取得に失敗しました');
+                }
+            } catch (error) {
+                console.error('シフト詳細取得エラー:', error);
+                alert('通信エラーが発生しました');
+            }
+        }
+
+        function closeShiftDetailModal() {
+            document.getElementById('shiftDetailModal').classList.remove('show');
         }
 
         // 業務報告読み込み
@@ -957,11 +1195,11 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    ${result.data.map(emp => `
+                                    ${result.data.map((emp, idx) => `
                                         <tr>
                                             <td>${emp.submitDate}</td>
                                             <td>${emp.employeeId}</td>
-                                            <td>${emp.employeeName}</td>
+                                            <td><span class="link-text" onclick='showReportDetail(${JSON.stringify(emp).replace(/'/g, "&apos;")})'>${emp.employeeName}</span></td>
                                             <td>${emp.targetDate}</td>
                                             <td>${emp.workTime}</td>
                                             <td>${emp.workHours}時間</td>
@@ -982,6 +1220,53 @@
                 console.error('提出済みデータ読み込みエラー:', error);
                 document.getElementById('reportSubmittedArea').innerHTML = '<div class="no-data">通信エラーが発生しました</div>';
             }
+        }
+
+        // 業務報告詳細モーダル表示
+        function showReportDetail(report) {
+            const modal = document.getElementById('reportDetailModal');
+            const title = document.getElementById('reportDetailModalTitle');
+            const body = document.getElementById('reportDetailModalBody');
+
+            title.textContent = `${report.employeeName}さんの業務報告（${report.targetDate}）`;
+
+            const detailHTML = `
+                <div class="detail-grid">
+                    <div class="detail-label">提出日時</div>
+                    <div class="detail-value">${report.submitDate}</div>
+                    
+                    <div class="detail-label">社員ID</div>
+                    <div class="detail-value">${report.employeeId}</div>
+                    
+                    <div class="detail-label">部署</div>
+                    <div class="detail-value">${report.department || '-'}</div>
+                    
+                    <div class="detail-label">対象日</div>
+                    <div class="detail-value">${report.targetDate}</div>
+                    
+                    <div class="detail-label">勤務時間</div>
+                    <div class="detail-value">${report.workTime}</div>
+                    
+                    <div class="detail-label">実労働時間</div>
+                    <div class="detail-value">${report.workHours}時間</div>
+                    
+                    <div class="detail-label">休憩時間</div>
+                    <div class="detail-value">${report.breakTime}分</div>
+                    
+                    <div class="detail-label">稼働区分</div>
+                    <div class="detail-value">${report.kubun}</div>
+                    
+                    <div class="detail-label">稼働先</div>
+                    <div class="detail-value">${report.workplace}</div>
+                </div>
+            `;
+
+            body.innerHTML = detailHTML;
+            modal.classList.add('show');
+        }
+
+        function closeReportDetailModal() {
+            document.getElementById('reportDetailModal').classList.remove('show');
         }
 
         // 労働時間管理読み込み
