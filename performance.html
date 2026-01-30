@@ -327,24 +327,26 @@
     <script>
         const SCRIPT_URL = 'https://interblue-proxy.k-hamada-ib.workers.dev/';
 
-        // URLパラメータ取得
-        const params = new URLSearchParams(window.location.search);
-        const date = params.get('date');
-        const kubun = params.get('kubun');
-        const workplace = params.get('workplace');
-
-        // セッション情報取得
+        // 認証チェック
         const employeeId = sessionStorage.getItem('employeeId');
         const employeeName = sessionStorage.getItem('employeeName');
 
-        // 認証チェック
-        if (!employeeId || !date || !kubun || !workplace) {
-            alert('必要な情報が不足しています');
-            window.location.href = 'menu.html';
+        if (!employeeId) {
+            window.location.href = 'index.html';
         }
 
-        // ユーザー名表示
         document.getElementById('userName').textContent = employeeName;
+
+        // URLパラメータ取得
+        const urlParams = new URLSearchParams(window.location.search);
+        const kubun = urlParams.get('kubun');
+        const date = urlParams.get('date');
+        const workplace = sessionStorage.getItem('lastWorkplace') || '';
+
+        if (!kubun || !date) {
+            alert('不正なアクセスです');
+            window.location.href = 'menu.html';
+        }
 
         // 情報表示
         document.getElementById('displayDate').textContent = date;
