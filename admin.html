@@ -849,11 +849,49 @@
         const currentYM = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
         const nextYM = `${today.getFullYear()}-${String(today.getMonth() + 2).padStart(2, '0')}`;
         
-        document.getElementById('shiftMonth').value = nextYM;
+        // ★ 修正①: シフト管理のデフォルト月を「現在の月」に変更
+        document.getElementById('shiftMonth').value = currentYM; // 翌月 → 現在の月
         document.getElementById('overtimeMonth').value = currentYM;
 
         // ダッシュボード読み込み
         loadDashboard();
+        
+        // ★ 修正④: 部署フィルターを従業員マスタから動的に生成
+        loadDepartmentFilters();
+
+        async function loadDepartmentFilters() {
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'getEmployees' })
+                });
+
+                const result = await response.json();
+
+                if (result.success && result.data) {
+                    // 部署の重複を削除してユニークな配列を作成
+                    const departments = [...new Set(result.data.map(emp => emp.department))].filter(d => d);
+                    
+                    // シフト管理の部署フィルター
+                    const shiftDeptFilter = document.getElementById('shiftDeptFilter');
+                    shiftDeptFilter.innerHTML = '<option value="">全部署</option>' +
+                        departments.map(dept => `<option value="${dept}">${dept}</option>`).join('');
+                    
+                    // 業務報告の部署フィルター
+                    const reportDeptFilter = document.getElementById('reportDeptFilter');
+                    reportDeptFilter.innerHTML = '<option value="">全部署</option>' +
+                        departments.map(dept => `<option value="${dept}">${dept}</option>`).join('');
+                    
+                    // 労働時間管理の部署フィルター
+                    const overtimeDeptFilter = document.getElementById('overtimeDeptFilter');
+                    overtimeDeptFilter.innerHTML = '<option value="">全部署</option>' +
+                        departments.map(dept => `<option value="${dept}">${dept}</option>`).join('');
+                }
+            } catch (error) {
+                console.error('部署フィルター取得エラー:', error);
+            }
+        }
 
         async function loadDashboard() {
             try {
@@ -914,6 +952,12 @@
 
         // シフト管理読み込み
         document.getElementById('loadShiftBtn').addEventListener('click', loadShiftData);
+        
+        // ★ 修正④: 部署フィルター変更時に自動再読み込み
+        document.getElementById('shiftDeptFilter').addEventListener('change', () => {
+            const yearMonth = document.getElementById('shiftMonth').value;
+            if (yearMonth) loadShiftData();
+        });
 
         async function loadShiftData() {
             const yearMonth = document.getElementById('shiftMonth').value;
@@ -1110,6 +1154,10 @@
         // 業務報告読み込み
         document.getElementById('refreshReportBtn').addEventListener('click', loadReportUnsubmitted);
         document.getElementById('loadReportBtn').addEventListener('click', loadReportSubmitted);
+        
+        // ★ 修正④: 部署フィルター変更時に自動再読み込み
+        document.getElementById('reportDeptFilter').addEventListener('change', loadReportSubmitted);
+        document.getElementById('reportPeriodFilter').addEventListener('change', loadReportSubmitted);
 
         async function loadReportUnsubmitted() {
             try {
@@ -1271,6 +1319,16 @@
 
         // 労働時間管理読み込み
         document.getElementById('loadOvertimeBtn').addEventListener('click', loadOvertimeData);
+        
+        // ★ 修正④: 部署・ステータスフィルター変更時に自動再読み込み
+        document.getElementById('overtimeDeptFilter').addEventListener('change', () => {
+            const yearMonth = document.getElementById('overtimeMonth').value;
+            if (yearMonth) loadOvertimeData();
+        });
+        document.getElementById('overtimeStatusFilter').addEventListener('change', () => {
+            const yearMonth = document.getElementById('overtimeMonth').value;
+            if (yearMonth) loadOvertimeData();
+        });
 
         async function loadOvertimeData() {
             const yearMonth = document.getElementById('overtimeMonth').value;
